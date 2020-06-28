@@ -25,7 +25,7 @@ class SheetController extends Controller
         $currencies = ['USD','BRL'];
         $cur_currency = 'BRL';
         $prev_currency = session('cur_currency');
-        
+
         $start_date = session('rep_start_date');
         $end_date = session('rep_end_date');
 
@@ -43,7 +43,7 @@ class SheetController extends Controller
             $cur_currency = $prev_currency;
         }
 
-        Report::getCurrenciesRate("BRL");
+        //Report::getCurrenciesRate("BRL");
 
         return view('admin.sheet.index', ['title'=>'Analysis Sheet', 'currencies' => $currencies, 'curcurrency' => $cur_currency, 'rep_start_date' => $start_date, 'rep_end_date' => $end_date]); 
     }
@@ -57,6 +57,12 @@ class SheetController extends Controller
         $cmp_margin = $request->get('margin');
         session()->put("rep_start_date", $start_date);
         session()->put("rep_end_date", $end_date);
+
+
+        //////////////////.........Currency String Processor.........../////////////////
+        $currencyStr = 'R$';
+        if($currency == 'USD')
+            $currencyStr = '$';
 
         $siteData = [];
 
@@ -72,13 +78,14 @@ class SheetController extends Controller
             $currencyRate = floatval(session('currency_m_'.$currency));
             $currecyMaxRate = floatval(session('currency_m_max_'.$currency));
             $braRate = session('currency_m_BRL');
+            session()->put('cur_currency', $currency);
         }
 
         $htmlContent = "";
 
         
         $curCampaignData = Report::getTaboolaCampaignValue($cmp_id);
-
+        
         $bidAmountLimit = round(0.025/floatval($braRate)*$currencyRate, 3);
 
         
@@ -291,7 +298,7 @@ class SheetController extends Controller
             }
 
             $htmlContent .= "<tr>";
-            $htmlContent .= "<td><a style='color: #0b54c6;' href='$href' target='_blank' title='$site_title'>$site_id</a></td><td>$f_spent</td><td>$f_gSpent</td><td>$f_rMax</td><td>$f_roiMin</td><td>$f_roiMax</td><td>$f_lMin</td><td>$f_lMax</td><td>$f_clicks</td><td data-toggle='popover'>$f_bidAcutal</td><td><a data-id='$site_name' boost='$r_cstboost' id='$site_id' class='popover_toggle' data-toggle='popover' onclick='showPopover(this)'>$f_bidAmount($cstboost_percent)</a><br>$btn_decreseHtml $btn_increaseHtml $btn_blockHtml</td><td>$f_bidMax<br> $btn_site_stautsHtml</td>";
+            $htmlContent .= "<td><a style='color: #0b54c6;' href='$href' target='_blank' title='$site_title'>$site_id</a></td><td>$currencyStr $f_spent</td><td>$currencyStr $f_gSpent</td><td>$currencyStr $f_rMax</td><td>$f_roiMin%</td><td>$f_roiMax%</td><td>$currencyStr $f_lMin</td><td>$currencyStr $f_lMax</td><td>$f_clicks</td><td data-toggle='popover'>$currencyStr $f_bidAcutal</td><td><a data-id='$site_name' boost='$r_cstboost' id='$site_id' class='popover_toggle' data-toggle='popover' onclick='showPopover(this)'>$currencyStr $f_bidAmount($cstboost_percent)</a><br>$btn_decreseHtml $btn_increaseHtml $btn_blockHtml</td><td>$currencyStr $f_bidMax<br> $btn_site_stautsHtml</td>";
             $htmlContent .= "</tr>";
         }
 
@@ -311,7 +318,7 @@ class SheetController extends Controller
             $s_bidAmount = number_format($s_bidAmount/$count, 3, '.', ',');
             $s_bidMax = number_format($s_bidMax/$count, 3, '.', ',');
 
-            $foot = "<tr><th>Total</th><th>$s_spent</th><th>$s_gSpent</th><th>$s_rMax</th><th>$s_roiMin</th><th>$s_roiMax</th><th>$s_lMin</th><th>$s_lMax</th><th>$s_clicks</th><th>$s_bidAcutal</th><th>$s_bidAmount</th><th>$s_bidMax</th></tr>";
+            $foot = "<tr><th>Total</th><th>$currencyStr $s_spent</th><th>$currencyStr $s_gSpent</th><th>$currencyStr $s_rMax</th><th>$s_roiMin%</th><th>$s_roiMax%</th><th>$currencyStr $s_lMin</th><th>$currencyStr $s_lMax</th><th>$s_clicks</th><th>$currencyStr $s_bidAcutal</th><th>$currencyStr $s_bidAmount</th><th>$currencyStr $s_bidMax</th></tr>";
         }
 
         session()->put("site_data", $siteData);
@@ -427,6 +434,11 @@ class SheetController extends Controller
         
         $currencyType = intval(session('currency_type'));
 
+        $currencyStr = 'R$';
+        if($currency == 'USD')
+            $currencyStr = '$';
+
+
         if($currencyType == 0)  //Auto Method...
         {
             $currencyRate = Report::getCurrenciesRate($currency);
@@ -437,6 +449,7 @@ class SheetController extends Controller
             $currencyRate = floatval(session('currency_m_'.$currency));
             $currecyMaxRate = floatval(session('currency_m_max_'.$currency));
             $braRate = session('currency_m_BRL');
+            session()->put('cur_currency', $currency);
         }
 
         $res = Report::getTaboolaCampaigns($start_date, $end_date);
@@ -549,7 +562,7 @@ class SheetController extends Controller
             $selectHtml .= "<option value='$cmp_id' margin='$margin_pro'>$cmp_id [$tcmpname]</option>";
 
             $htmlContent .= "<tr>";
-            $htmlContent .= "<td><a id='cmp_$cmp_id' style='color: #0b54c6;' onclick='goSiteData($cmp_id)' title='$campaignName'>$cmp_id</a></td><td>$f_spent</td><td>$f_gSpent</td><td>$f_rMax</td><td>$f_roiMin</td><td>$f_roiMax</td><td>$f_lMin</td><td>$f_lMax</td><td>$f_clicks</td><td>$f_bidAcutal</td><td>$f_bidMax</td><td id='$cmp_id' class='popover_toggle' data-toggle='popover' date-last='$end_date' onclick='showMarginPopover(this)'>$margin_pro</td>";
+            $htmlContent .= "<td><a id='cmp_$cmp_id' style='color: #0b54c6;' onclick='goSiteData($cmp_id)' title='$campaignName'>$cmp_id</a></td><td>$currencyStr $f_spent</td><td>$currencyStr $f_gSpent</td><td>$currencyStr $f_rMax</td><td>$f_roiMin%</td><td>$f_roiMax%</td><td>$currencyStr $f_lMin</td><td>$currencyStr $f_lMax</td><td>$f_clicks</td><td>$currencyStr $f_bidAcutal</td><td>$currencyStr $f_bidMax</td><td id='$cmp_id' class='popover_toggle' data-toggle='popover' date-last='$end_date' onclick='showMarginPopover(this)'>$margin_pro%</td>";
             $htmlContent .= "</tr>";
         }
 
@@ -567,8 +580,8 @@ class SheetController extends Controller
             $s_clicks = number_format(floatval($s_clicks), 0, '.', ',');
             $s_bidAcutal = number_format($s_bidAcutal/$count, 3, '.', ',');
             $s_bidMax = number_format($s_bidMax/$count, 3, '.', ',');
-            $s_margin = $s_margin / $count;
-            $foot = "<tr><th>Total</th><th>$s_spent</th><th>$s_gSpent</th><th>$s_rMax</th><th>$s_roiMin</th><th>$s_roiMax</th><th>$s_lMin</th><th>$s_lMax</th><th>$s_clicks</th><th>$s_bidAcutal</th><th>$s_bidMax</th><th>$s_margin</th></tr>";
+            $s_margin = number_format($s_margin / $count, 2, '.', ',');
+            $foot = "<tr><th>Total</th><th>$currencyStr $s_spent</th><th>$currencyStr $s_gSpent</th><th>$currencyStr $s_rMax</th><th>$s_roiMin%</th><th>$s_roiMax%</th><th>$currencyStr $s_lMin</th><th>$currencyStr $s_lMax</th><th>$s_clicks</th><th>$currencyStr $s_bidAcutal</th><th>$currencyStr $s_bidMax</th><th>$s_margin%</th></tr>";
         }
 
         return response()->json(['status'=>true, 'data'=>$htmlContent, 'selectlist'=>$selectHtml, 'foot'=>$foot]); 
@@ -584,12 +597,9 @@ class SheetController extends Controller
         $cmpBlockList = session("site_blocklist");
         $cmpCstBoost = session("site_cstboost");
 
-
-        
         $result = [];
         $sendVal = [];
         
-
         if($type == "blocking")
         {
             if($changeval == 'block')
@@ -681,7 +691,7 @@ class SheetController extends Controller
                     if($value['bid_max'] < 0.025) 
                         $bidValue = 0.025 / $value['default_bid'];
                     $bidValue = round($bidValue, 2);
-                    if($bidValue > 2) $bidValue = 2.0;
+                    if($bidValue > 1.3) $bidValue = 1.3;
 
                     $found = array_filter($cmpCstBoost, function($v,$k) use ($siteid){
                         return $v['target'] == $siteid;

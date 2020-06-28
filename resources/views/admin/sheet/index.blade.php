@@ -50,7 +50,7 @@
                                     <th id="th_profit_max">Profit Max({{ $curcurrency }})</th>
                                     <th>Clicks</th>
                                     <th id="th_bid_actual">BID Actual({{ $curcurrency }})</th>
-                                    <th id="th_bid_max">BID Max({{ $curcurrency }})</th>
+                                    <th id="th_bid_max" width="12%">BID Max({{ $curcurrency }})</th>
                                     <th id="th_margin">Margin(%)</th>
                                 </tr>
                             </thead>
@@ -289,8 +289,11 @@
                         margin:margin,
                     },
                     success : function(res) {
+                        let currencyStr = "R$";
+                        if(currency == "USD")
+                            currencyStr = "$";
                         
-                        $('#sheet_title').text(res.cmpname + `(Campaign: ${id}, Spent: ${res.cmpspent}${currency}, CPC: ${res.cmpbidamount}${currency}, Margin: ${margin}%)`);
+                        $('#sheet_title').text(res.cmpname + `(Campaign: ${id}, Spent:${currencyStr} ${res.cmpspent}, CPC:${currencyStr} ${res.cmpbidamount}, Margin: ${margin}%)`);
                         $('#sheet_title').attr('bid-admount', res.cmpbidamount);
                         $('#sheet_title').attr('bid-admount-limit', res.cmpbidamountlimit);
 
@@ -337,6 +340,22 @@
                                     }
                                 },
                                 {
+                                    text: 'Bid Reset',
+                                    action: function ( e, dt, node, config ) {
+                                        swal({
+                                            title: 'Are you sure?',
+                                            text: "Resets the bid amount for all sites in the current campaign to the default value.",
+                                            type: 'warning',
+                                            showCancelButton: true,
+                                            confirmButtonClass: 'btn btn-success',
+                                            cancelButtonClass: 'btn btn-danger m-l-10',
+                                            confirmButtonText: 'Yes, reset them!'
+                                        }).then(function () {
+                                            
+                                        });
+                                    }
+                                },
+                                {
                                     "extend": 'collection',
                                     "text": 'Export',
                                     "buttons": [ 'copy', 'csv', 'excel', 'pdf', 'print' ],
@@ -346,7 +365,7 @@
                             ],
                         });
 
-                        $('.select2-container').css('left', '550px');
+                        $('.select2-container').css('left', '655px');
                         $.unblockUI();
                     },
                     error: function (request, status, error) {
@@ -417,13 +436,20 @@
                     cmp_id:cmp_id,
                 },
                 success : function(res) {
+                    
+                    let currency = $('#selcurrency').val();
+                    let currencyStr = 'R$';
+
+                    if(currency == "USD") currencyStr = '$';
+
                     let pre_margin_val = parseFloat($('td#' + cmp_id).text());
-                    let pre_bid_max = parseFloat($('td#' + cmp_id).prev().text());
+                    let pre_bid_max = parseFloat($('td#' + cmp_id).prev().text().replace(`${currencyStr} `,''));
                     let cur_bid_max = pre_bid_max / ((100-pre_margin_val) / 100) * ((100 - margin_value) / 100);
                     cur_bid_max = Math.round((cur_bid_max + Number.EPSILON) * 1000) / 1000;
                     $(`#selcampaigns option[value=${cmp_id}]`).attr('margin', margin_value);
-                    $("td#" + cmp_id).text(margin_value);
-                    $("td#" + cmp_id).prev().text(cur_bid_max);
+
+                    $("td#" + cmp_id).text(margin_value + ' %');
+                    $("td#" + cmp_id).prev().text(currencyStr + ' ' + cur_bid_max);
                     $.unblockUI();
                     toastr.success("The operation is success.", "Success!");
                 },
@@ -620,16 +646,21 @@
                 return false;   
             }
 
+            let currency = $('#selcurrency').val();
+            let currencyStr = 'R$';
+
+            if(currency == "USD") currencyStr = '$';
+
             updateCampaign("boost", site_name , dec_boost_pro/100, function(res)
             {
                 if(dec_boost_pro == 100)
                 {
                      $('a#' + site_id).attr('boost', 0);
-                     $('a#' + site_id).text(`${cur_boost_val}(Default)`);
+                     $('a#' + site_id).text(`${currencyStr} ${cur_boost_val}(Default)`);
 
                 } else {
                       $('a#' + site_id).attr('boost', dec_boost_pro - 100);
-                      $('a#' + site_id).text(`${cur_boost_val}(${dec_boost_pro - 100}%)`);
+                      $('a#' + site_id).text(`${currencyStr} ${cur_boost_val}(${dec_boost_pro - 100}%)`);
                 }
             });
         }
@@ -662,16 +693,21 @@
                 return false;   
             }
 
+            let currency = $('#selcurrency').val();
+            let currencyStr = 'R$';
+
+            if(currency == "USD") currencyStr = '$';
+
             updateCampaign("boost", site_name , inc_boost_pro/100, function(res)
             {
                 if(inc_boost_pro == 100)
                 {
                      $('a#' + site_id).attr('boost', 0);
-                     $('a#' + site_id).text(`${cur_boost_val}(Default)`);
+                     $('a#' + site_id).text(`${currencyStr} ${cur_boost_val}(Default)`);
 
                 } else {
                       $('a#' + site_id).attr('boost', inc_boost_pro - 100);
-                      $('a#' + site_id).text(`${cur_boost_val}(${inc_boost_pro - 100}%)`);
+                      $('a#' + site_id).text(`${currencyStr} ${cur_boost_val}(${inc_boost_pro - 100}%)`);
                 }
             });
 
@@ -823,17 +859,21 @@
             
             cur_pro = $('#boost_' + site_id).val();
             $('[data-toggle="popover"]').popover('dispose');
+            let currency = $('#selcurrency').val();
+            let currencyStr = 'R$';
+
+            if(currency == "USD") currencyStr = '$';
 
             updateCampaign("boost", site_name , boost_send_val, function(res)
             {
                 if(boost_send_val === 1)
                 {
-                    $('a#' + site_id).text(`${boost_val}(Default)`);
+                    $('a#' + site_id).text(`${currencyStr} ${boost_val}(Default)`);
                     $('a#' + site_id).attr('boost', 0);    
                     $(obj).attr('boost', 0); 
                 } else 
                 {
-                    $('a#' + site_id).text(`${boost_val}(${cur_pro}%)`);
+                    $('a#' + site_id).text(`${currencyStr} ${boost_val}(${cur_pro}%)`);
                     $('a#' + site_id).attr('boost', cur_pro);
                     $(obj).attr('boost', cur_pro); 
                 }

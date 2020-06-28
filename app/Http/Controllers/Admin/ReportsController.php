@@ -73,6 +73,7 @@ class ReportsController extends Controller
             $currencyRate = Report::getCurrenciesRate($currency);
         } else                  //Manual Method...
         {
+            session()->put('cur_currency', $currency);
             $currencyRate = floatval(session('currency_m_'.$currency));
         }
 
