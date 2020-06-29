@@ -97,7 +97,7 @@ class AutoUpdate extends Command
         }
 
 
-        foreach ($curSites as $key => $value) 
+        foreach ($curSites as $key => $value)
         {
             $sitetitle = $value['site'];
             $siteid = $value['site_id'];
@@ -163,6 +163,23 @@ class AutoUpdate extends Command
                     array_push($cmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => $bidValue]);
                 } else
                 {
+                    $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
+                }
+            } else if($roiMin > 0) {    //step by step control
+                
+                $found = array_filter($cmpCstBoost, function($v,$k) use ($sitetitle){
+                    return $v['target'] == $sitetitle;
+                }, ARRAY_FILTER_USE_BOTH); 
+                
+                if(sizeof($found) == 0)
+                {
+                    array_push($cmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => 1.1]);
+                } else
+                {
+                    $bidValue = $found[array_keys($found)[0]]["cpc_modification"] + 0.1;
+                    
+                    $bidValue = round($bidValue, 2);
+                    if($bidValue > 1.5) $bidValue = 1.5;
                     $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
                 }
             }

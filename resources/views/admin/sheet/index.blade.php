@@ -351,7 +351,10 @@
                                             cancelButtonClass: 'btn btn-danger m-l-10',
                                             confirmButtonText: 'Yes, reset them!'
                                         }).then(function () {
-                                            
+                                            updateCampaign("reset", "", "", function(res)
+                                            {
+                                                $('#selcurrency').trigger('change');
+                                            });
                                         });
                                     }
                                 },
@@ -946,7 +949,7 @@
                     if (typeof callback == "function")
                     {
                         callback(res);
-                        if(type != "auto")
+                        if(type != "auto" && type != "reset")
                         {
                             $.unblockUI();
                             toastr.success("The operation is success.", "Success!");

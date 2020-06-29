@@ -13,6 +13,8 @@ use Analytics;
 use Spatie\Analytics\Period;
 use Carbon\Carbon;
 
+use function PHPSTORM_META\type;
+
 class SheetController extends Controller
 {
     public function __construct(){
@@ -216,8 +218,6 @@ class SheetController extends Controller
             if($clicks > 0)
                 $bidMax = $rMax / $clicks * $marginVal;
 
-            
-            
             $curBidAmount = round($bidAmount, 3);
 
             $siteData[$site_id]['site_id'] = $site_id;
@@ -238,6 +238,7 @@ class SheetController extends Controller
 
             //$siteData[$site_id]['cmp_margin'] = $cmp_margin;
             $siteData[$site_id]['clicks'] = $clicks;
+            $siteData[$site_id]['r_boost'] = $cstboost;
 
             $f_spent = number_format(round($spent, 2), 2, '.', ',');
             $f_gSpent = number_format(round($gSpent, 2), 2, '.', ',');
@@ -501,7 +502,6 @@ class SheetController extends Controller
             if(floatval($spent) == 0 && floatval($clicks) == 0)
                 continue;
 
-            
             $findVal = $this->findCampaign($result, $cmp_id);
             if(empty($findVal)) continue;
             
@@ -706,6 +706,22 @@ class SheetController extends Controller
                     {
                         $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
                     }
+                } else if($value['roi_min'] > 0) {    //step by step control
+                    $bidValue = $value['r_boost'] + 0.1;
+                    $bidValue = round($bidValue, 2);
+                    if($bidValue > 1.5) $bidValue = 1.5;
+
+                    $found = array_filter($cmpCstBoost, function($v,$k) use ($siteid){
+                        return $v['target'] == $siteid;
+                    }, ARRAY_FILTER_USE_BOTH); 
+
+                    if(sizeof($found) == 0)
+                    {
+                        array_push($cmpCstBoost, [ "target" => $siteid, "cpc_modification" => $bidValue]);
+                    } else
+                    {
+                        $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
+                    }
                 }
             }
 
@@ -728,13 +744,47 @@ class SheetController extends Controller
 
 
             $result = Report::updateTaboolaCampaigns($cmpid, $sendVal);
-            session()->put("site_blocklist", $result['publisher_targeting']['value']);
+            //session()->put("site_blocklist", $result['publisher_targeting']['value']);
+            session()->put("site_cstboost", $result['publisher_bid_modifier']['values']);
+        } else if($type == "reset")
+        {
+            $cmpSiteData = session('site_data');
+            $site_status_list = session('site_status_list');
+
+            foreach ($cmpSiteData as $key => $value) {
+                
+                if(array_key_exists($value['site_id'], $site_status_list))
+                {
+                    if($site_status_list[$value['site_id']] == 0)
+                        continue;
+                }
+
+                $siteid = $value['site_name'];
+
+                $found = array_filter($cmpCstBoost, function($v,$k) use ($siteid){
+                    return $v['target'] == $siteid;
+                }, ARRAY_FILTER_USE_BOTH); 
+
+                if(sizeof($found) > 0) 
+                {
+                    $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = 1;
+                }
+            }
+            
+            $sendVal =  [      
+                "publisher_bid_modifier" => [
+                    "values" => $cmpCstBoost
+                ] 
+            ];
+
+            $result = Report::updateTaboolaCampaigns($cmpid, $sendVal);
+            //session()->put("site_blocklist", $result['publisher_targeting']['value']);
             session()->put("site_cstboost", $result['publisher_bid_modifier']['values']);
         }
-
         return response()->json(['status'=>true]); 
     }
-
+    
+    
     public function findCampaign($data, $id)
     {
         foreach ($data as $key => $value) {

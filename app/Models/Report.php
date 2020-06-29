@@ -145,8 +145,6 @@ class Report extends Model
         return $response;
     }
 
-
-
     static function getTaboolaCampaigns($start_date, $end_date)
     {
         $account_id = session('account_name');

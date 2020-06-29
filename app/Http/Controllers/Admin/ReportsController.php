@@ -92,7 +92,7 @@ class ReportsController extends Controller
         if($search != "")
         {
             $filterLst = ["ga:adContent%3D@$search", "ga:source%3D@$search"];    
-        } 
+        }
 
         $sort = $order.$columnName;
         ////
