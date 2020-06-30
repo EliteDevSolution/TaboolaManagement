@@ -688,16 +688,15 @@ class SheetController extends Controller
                     //var_dump( $value['site_id'].':'.$value['site_name'].'  '.$value['clicks'].'  ');
                     //exit;
                     $bidValue = $value['bid_max'] / $value['default_bid'];
-                    if($value['bid_max'] < 0.025) 
-                        $bidValue = 0.025 / $value['default_bid'];
+                    //if($value['bid_max'] < 0.025) 
+                    //    $bidValue = 0.025 / $value['default_bid'];
                     $bidValue = round($bidValue, 2);
                     if($bidValue > 1.3) $bidValue = 1.3;
+                    if($bidValue < 0.7) $bidValue = 0.7;
 
                     $found = array_filter($cmpCstBoost, function($v,$k) use ($siteid){
                         return $v['target'] == $siteid;
                     }, ARRAY_FILTER_USE_BOTH); 
-
-                    
 
                     if(sizeof($found) == 0) 
                     {

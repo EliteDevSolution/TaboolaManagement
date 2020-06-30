@@ -149,10 +149,11 @@ class AutoUpdate extends Command
             if($clicks >= 10)    //Bid amount update condition
             {
                 $bidValue = $bidMax / $cmpBidAmount;
-                if($bidMax < 0.025) 
-                    $bidValue = 0.025 / $cmpBidAmount;
+                // if($bidMax < 0.025) 
+                //     $bidValue = 0.025 / $cmpBidAmount;
                 $bidValue = round($bidValue, 2);
                 if($bidValue > 1.3) $bidValue = 1.3;
+                if($bidValue < 0.7) $bidValue = 0.7;
 
                 $found = array_filter($cmpCstBoost, function($v,$k) use ($sitetitle){
                     return $v['target'] == $sitetitle;
