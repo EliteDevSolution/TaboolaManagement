@@ -153,17 +153,36 @@ class AutoUpdate extends Command
                 //     $bidValue = 0.025 / $cmpBidAmount;
                 $bidValue = round($bidValue, 2);
                 if($bidValue > 1.3) $bidValue = 1.3;
-                if($bidValue < 0.7) $bidValue = 0.7;
-
+                
+                //if($bidValue < 0.7) $bidValue = 0.7;
+                
                 $found = array_filter($cmpCstBoost, function($v,$k) use ($sitetitle){
                     return $v['target'] == $sitetitle;
-                }, ARRAY_FILTER_USE_BOTH); 
+                }, ARRAY_FILTER_USE_BOTH);
 
-                if(empty($found)) 
+                if(sizeof($found) == 0) 
                 {
+                    if(1 - $bidValue > 0.1)
+                    {
+                        $bidValue = 0.9;
+                    }
+                    if($cmpBidAmount * $bidValue < 0.025) 
+                    {
+                        $bidValue = 0.025 / $cmpBidAmount;
+                        $bidValue = round($bidValue, 2);
+                    }
                     array_push($cmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => $bidValue]);
                 } else
                 {
+                    if(1 - $bidValue > 0.1)
+                    {
+                        $bidValue = $found[array_keys($found)[0]]["cpc_modification"] - 0.1;    
+                    }
+                    if($cmpBidAmount * $bidValue < 0.025) 
+                    {
+                        $bidValue = 0.025 / $cmpBidAmount;
+                        $bidValue = round($bidValue, 2);
+                    }
                     $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
                 }
             } else if($roiMin > 0) {    //step by step control

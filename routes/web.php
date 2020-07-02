@@ -48,7 +48,9 @@ Route::middleware('ajax')->group(function () {
 
 // Admin Panel Routes
 Route::prefix('admin')->group(function () {
-    Route::get('/', 'Admin\DashboardController@index')->name('dashboard');
+	Route::get('/', 'Admin\DashboardController@index')->name('dashboard');
+	Route::post('/dashboard/gettotal', 'Admin\DashboardController@getTotalValue')->name('dashboard.gettotal');
+	
 	Route::get('/login', 'Admin\Auth\LoginController@showLoginForm')->name('admin.login');
 	Route::get('/register', 'Auth\RegisterController@showAdminRegisterForm');
 
@@ -76,9 +78,6 @@ Route::prefix('admin')->group(function () {
 	Route::post('/sheet/setcurrency', 'Admin\SheetController@setCurrencyValue')->name('sheet.setcurrency');
 	Route::post('/sheet/getcurrency', 'Admin\SheetController@getCurrencyInfo')->name('sheet.getcurrency');
 	Route::post('/sheet/sitechangestatus', 'Admin\SheetController@changeSiteStatus')->name('sheet.sitechangestatus');
-	
-
-
 
 	Route::resource('/reports', 'Admin\ReportsController');
 	Route::get('/getanalysisjson', 'Admin\ReportsController@getAnalysisJson');

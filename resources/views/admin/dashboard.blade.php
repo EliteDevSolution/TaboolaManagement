@@ -7,39 +7,47 @@
 <div class="page-content-wrapper ">
     <div class="container">
         <div class="row">
+            <div class="col-12">
+                <div class="m-b-10 list-inline float-right" id="dashdate" style="cursor: pointer;width: 196px;">
+                    <i class="fa fa-calendar"></i>&nbsp;
+                    <span></span> <i class="fa fa-caret-down"></i>
+                </div>    
+                
+            </div>
+
             <div class="col-md-6 col-lg-6 col-xl-3">
                 <div class="mini-stat clearfix bg-primary">
-                    <span class="mini-stat-icon"><i class="mdi mdi-account-star-variant"></i></span>
+                    <span class="mini-stat-icon"><i class="mdi mdi-currency-usd"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter">{{ $allusercount }}</span>
-                        Total Participants
+                        <span class="counter" id="s_spend_total">R$ 0</span>
+                        Total Spends
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-6 col-xl-3">
                 <div class="mini-stat clearfix bg-primary">
-                    <span class="mini-stat-icon"><i class="mdi mdi-account-multiple-plus"></i></span>
+                    <span class="mini-stat-icon"><i class="mdi mdi-cart-outline"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter">{{ $newusercount }}</span>
-                        New Users
+                        <span class="counter" id="s_rmax_total">R$ 0</span>
+                        Total Received Max
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-6 col-xl-3">
                 <div class="mini-stat clearfix bg-primary">
-                    <span class="mini-stat-icon"><i class="mdi mdi-timer-sand"></i></span>
+                    <span class="mini-stat-icon"><i class="mdi mdi-scale-balance"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter">{{ $time_tool }}</span>
-                        Time spent in the Tool
+                        <span class="counter" id="s_profit_total">R$ 0</span>
+                        Total Profit Max
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-6 col-xl-3">
                 <div class="mini-stat clearfix bg-primary">
-                    <span class="mini-stat-icon"><i class="mdi mdi-av-timer"></i></span>
+                    <span class="mini-stat-icon"><i class="mdi mdi-cube-outline"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter">{{ $time_reference }}</span>
-                        Time spent reading Reference
+                        <span class="counter" id="s_roimax_total">0 %</span>
+                        ROI Max
                     </div>
                 </div>
             </div>
@@ -274,6 +282,7 @@
     <link rel="stylesheet" href="{{ asset('assets/admin/plugins/datatables/buttons.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/plugins/datatables/responsive.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/plugins/jvectormap/jquery-jvectormap-2.0.2.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css"/>
     </style>
 @endpush
 
@@ -321,9 +330,76 @@
     <!-- Responsive examples -->
     <script src="{{ asset('assets/admin/plugins/datatables/dataTables.responsive.min.js') }}"></script>
     <script src="{{ asset('assets/admin/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
+
+    <!-- Date Range Picker Js -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     
     
     <script>
+        $(function() {
+
+            var start = new Date("{{ $rep_start_date }}".replace( /(\d{4})-(\d{2})-(\d{2})/, "$1/$2/$3"));
+            start = moment(start);
+            var dtable;
+
+            function cb(cstart) {
+               $('#dashdate span').html(cstart.format('MMMM D, YYYY'));
+
+                // Grab the datatables input box and alter how it is bound to events
+                start_date = cstart.format('YYYY-MM-DD');
+                start = cstart;
+                getTotalValues(start_date);
+            }
+
+            $('#dashdate').daterangepicker({
+                startDate: start,
+                singleDatePicker: true,
+                showDropdowns: true,
+                maxDate: moment().format('MM/DD/YYYY'), 
+                minDate: moment().subtract(2, 'years').format('MM/DD/YYYY')
+            }, cb);
+            
+            cb(start);
+
+        });
+
+        function getTotalValues(curDate)
+        {
+            blockUI();
+
+            $.ajax({
+                url: "{{ route('dashboard.gettotal') }}",
+                type : "POST",
+                headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                data : {
+                    cur_date:curDate,
+                },
+                success : function(res) {
+                    if(res.status === false)
+                    {
+                        $('#s_spend_total').text('R$ 0');
+                        $('#s_rmax_total').text('R$ 0');
+                        $('#s_profit_total').text('R$ 0');
+                        $('#s_roimax_total').text('0 %');
+                    } else
+                    {
+                        $('#s_spend_total').text('R$ ' + res.s_spent);
+                        $('#s_rmax_total').text('R$ ' + res.s_rmax);
+                        $('#s_profit_total').text('R$ ' + res.s_lmax);
+                        $('#s_roimax_total').text(res.s_roimax + ' %');
+                    }
+                    $.unblockUI();
+                },
+                error: function (request, status, error) {
+                        toastr.error("Data loading error!", "Error");
+                        $.unblockUI();
+                }
+            });
+        }
+        
+
+
     
     // Start flot.init.js
         new Chart(document.getElementById("line-chart1"), {

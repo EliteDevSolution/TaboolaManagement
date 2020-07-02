@@ -113,6 +113,19 @@ class LoginController extends Controller
       Report::getCurrenciesRate("BRL");
 
       $this->taboolaAccess(session('client_id'), session('client_secret'));
+
+      $allCmp = Report::getTaboolaAllCampaign()['results'];
+      $allCmpValueLst = [];
+      foreach($allCmp as $value)
+      {
+            $allCmpValueLst[$value['id']]['is_active'] = $value['is_active'];
+            $allCmpValueLst[$value['id']]['daily_cap'] = $value['daily_cap'];
+            $allCmpValueLst[$value['id']]['bid_type'] = $value['bid_type'];
+            $allCmpValueLst[$value['id']]['cpc'] = $value['cpc'];
+            if($value['start_date'] == null) $value['start_date'] = "-";
+            $allCmpValueLst[$value['id']]['start_date'] = $value['start_date'];
+      }
+      session()->put('all_cmp_list', $allCmpValueLst);
     }
 
     protected function guard(){

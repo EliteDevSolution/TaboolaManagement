@@ -188,9 +188,7 @@ class SheetController extends Controller
             if($cpc > 0 && $clicks > 0)
                 $cpc= $spent/$clicks;
             $cpc = floatval($cpc)/floatval($braRate)*$currencyRate;
-            
-            $actual_cpc =$cpc * 1000;
-
+            //$actual_cpc = $cpc * 1000;
             $bidActual = $cpc;
             $cstboost = 1;
             $cstboost_percent = 'Default';
@@ -312,8 +310,8 @@ class SheetController extends Controller
             $s_rMax = number_format(round($s_rMax/$count, 2), 2, '.', ',');
             $s_roiMin = number_format(round($s_rMax/$count, 2), 2, '.', ',');
             $s_roiMax = number_format(round($s_roiMax/$count, 2), 2, '.', ',');
-            $s_lMin = number_format(round($s_lMin/$count, 2), 2, '.', ',');
-            $s_lMax = number_format(round($s_lMax/$count, 2), 2, '.', ',');
+            $s_lMin = number_format(round($s_lMin, 2), 2, '.', ',');
+            $s_lMax = number_format(round($s_lMax, 2), 2, '.', ',');
             $s_clicks = number_format(floatval($s_clicks), 0, '.', ',');
             $s_bidAcutal = number_format($s_bidAcutal/$count, 3, '.', ',');
             $s_bidAmount = number_format($s_bidAmount/$count, 3, '.', ',');
@@ -457,6 +455,7 @@ class SheetController extends Controller
 
         if(sizeof($res) == 0)
             return response()->json(['status'=>false]); 
+        
 
         $htmlContent = "";
 
@@ -488,9 +487,15 @@ class SheetController extends Controller
         $s_bidAcutal = 0;
         $s_bidMax = 0;
         $s_margin = 0;
+        $s_daily = 0;
+        $s_strategy = 0;
         $count = 0;
 
         $selectHtml = "";
+
+        $allCmpValueLst = session('all_cmp_list');
+
+        $cmpData = [];
 
         foreach($res['results'] as $value)
         {
@@ -499,13 +504,19 @@ class SheetController extends Controller
             $clicks = $value['clicks'];
             $tcmpname = $value['campaign_name'];
             $cpc = floatval($value['cpc']);
+            
             if(floatval($spent) == 0 && floatval($clicks) == 0)
                 continue;
 
             $findVal = $this->findCampaign($result, $cmp_id);
             if(empty($findVal)) continue;
+
+            $start_date = $allCmpValueLst[$cmp_id]['start_date'];
+            $is_active = $allCmpValueLst[$cmp_id]['is_active'];
             
-            
+            $daily = floatval($allCmpValueLst[$cmp_id]['daily_cap']) / floatval($braRate) * $currencyRate;
+            $bid_strategy = floatval($allCmpValueLst[$cmp_id]['cpc']) / floatval($braRate) * $currencyRate;
+            $bid_type = $allCmpValueLst[$cmp_id]['bid_type'];
             $spent = floatval($spent)/floatval($braRate)*$currencyRate;
             $gSpent = $findVal[2]*$currencyRate;
 
@@ -534,6 +545,13 @@ class SheetController extends Controller
 
             $bidMax = $rMax/$clicks*$margin;
 
+            $cmpData[$cmp_id]['spent'] = $spent;
+            $cmpData[$cmp_id]['cpc'] = $cpc;
+            $cmpData[$cmp_id]['clicks'] = $clicks;
+            $cmpData[$cmp_id]['is_active'] = $is_active;
+
+
+            $f_daily = number_format(round($daily, 2), 0, '.', ',');
             $f_spent = number_format(round($spent, 2), 2, '.', ',');
             $f_gSpent = number_format(round($gSpent, 2), 2, '.', ',');
             $f_rMax = number_format(round($rMax, 2), 2, '.', ',');
@@ -543,8 +561,11 @@ class SheetController extends Controller
             $f_lMax = number_format(round($lMax, 2), 2, '.', ',');
             $f_clicks = number_format(floatval($clicks), 0, '.', ',');
             $f_bidAcutal = number_format(round($bidActual, 3), 3, '.', ',');
+            $f_bidStrategy = number_format(round($bid_strategy, 3), 3, '.', ',');
             $f_bidMax = number_format(round($bidMax, 3), 3, '.', ',');
+            
 
+            $s_daily += $daily;
             $s_spent += $spent;
             $s_gSpent += $gSpent;
             $s_rMax += $rMax;
@@ -554,6 +575,7 @@ class SheetController extends Controller
             $s_lMax += $lMax;
             $s_clicks += $clicks;
             $s_bidAcutal += round($bidActual, 3);
+            $s_strategy += $bid_strategy;
             $s_bidMax += round($bidMax, 3);
             $s_margin += $margin_pro;
 
@@ -561,29 +583,40 @@ class SheetController extends Controller
 
             $selectHtml .= "<option value='$cmp_id' margin='$margin_pro'>$cmp_id [$tcmpname]</option>";
 
+            $btn_statusHtml = "<button id='btn_status_$cmp_id' cmp-id='$cmp_id' status='pause' class='btn btn-danger waves-effect waves-light btn-sm' onclick='setCmpPause(this)'><i class='mdi mdi-pause'></i></button>";
+
+            if(!$is_active)
+            {
+                $btn_statusHtml = "<button id='btn_status_$cmp_id' cmp-id='$cmp_id' status='play' class='btn btn-success waves-effect waves-light btn-sm' onclick='setCmpPause(this)'><i class='mdi mdi-play'></i></button>";
+            }
+
             $htmlContent .= "<tr>";
-            $htmlContent .= "<td><a id='cmp_$cmp_id' style='color: #0b54c6;' onclick='goSiteData($cmp_id)' title='$campaignName'>$cmp_id</a></td><td>$currencyStr $f_spent</td><td>$currencyStr $f_gSpent</td><td>$currencyStr $f_rMax</td><td>$f_roiMin%</td><td>$f_roiMax%</td><td>$currencyStr $f_lMin</td><td>$currencyStr $f_lMax</td><td>$f_clicks</td><td>$currencyStr $f_bidAcutal</td><td>$currencyStr $f_bidMax</td><td id='$cmp_id' class='popover_toggle' data-toggle='popover' date-last='$end_date' onclick='showMarginPopover(this)'>$margin_pro%</td>";
+            $htmlContent .= "<td><a id='cmp_$cmp_id' style='color: #0b54c6;' onclick='goSiteData($cmp_id)' title='$campaignName'>$cmp_id</a></td><td>$currencyStr $f_daily</td><td>$currencyStr $f_spent</td><td>$currencyStr $f_gSpent</td><td>$currencyStr $f_rMax</td><td>$f_roiMin%</td><td>$f_roiMax%</td><td>$currencyStr $f_lMin</td><td>$currencyStr $f_lMax</td><td>$f_clicks</td><td>$currencyStr $f_bidAcutal</td><td>$currencyStr $f_bidStrategy<br>($bid_type)</td><td>$currencyStr $f_bidMax</td><td id='$cmp_id' class='popover_toggle' data-toggle='popover' date-last='$end_date' onclick='showMarginPopover(this)'>$margin_pro%</td><td>$start_date</td><td>$btn_statusHtml</td>";
             $htmlContent .= "</tr>";
         }
 
-        $foot = "<tr><th>Total</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th></tr>";
+        $foot = "<tr><th>Total</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>0</th><th>-</th><th>-</th></tr>";
 
         if($count > 0)
         {
+            $s_daily = number_format(round($s_daily/$count, 2), 0, '.', ',');
             $s_spent = number_format(round($s_spent, 2), 2, '.', ',');
             $s_gSpent = number_format(round($s_gSpent, 2), 2, '.', ',');
-            $s_rMax = number_format(round($s_rMax/$count, 2), 2, '.', ',');
-            $s_roiMin = number_format(round($s_rMax/$count, 2), 2, '.', ',');
+            $s_rMax = number_format(round($s_rMax, 2), 2, '.', ',');
+            $s_roiMin = number_format(round($s_roiMin/$count, 2), 2, '.', ',');
             $s_roiMax = number_format(round($s_roiMax/$count, 2), 2, '.', ',');
-            $s_lMin = number_format(round($s_lMin/$count, 2), 2, '.', ',');
-            $s_lMax = number_format(round($s_lMax/$count, 2), 2, '.', ',');
+            $s_lMin = number_format(round($s_lMin, 2), 2, '.', ',');
+            $s_lMax = number_format(round($s_lMax, 2), 2, '.', ',');
             $s_clicks = number_format(floatval($s_clicks), 0, '.', ',');
             $s_bidAcutal = number_format($s_bidAcutal/$count, 3, '.', ',');
+            $s_strategy = number_format(round($s_strategy/$count, 3), 3, '.', ',');
+
             $s_bidMax = number_format($s_bidMax/$count, 3, '.', ',');
             $s_margin = number_format($s_margin / $count, 2, '.', ',');
-            $foot = "<tr><th>Total</th><th>$currencyStr $s_spent</th><th>$currencyStr $s_gSpent</th><th>$currencyStr $s_rMax</th><th>$s_roiMin%</th><th>$s_roiMax%</th><th>$currencyStr $s_lMin</th><th>$currencyStr $s_lMax</th><th>$s_clicks</th><th>$currencyStr $s_bidAcutal</th><th>$currencyStr $s_bidMax</th><th>$s_margin%</th></tr>";
+            $foot = "<tr><th>Total</th><th>$currencyStr $s_daily</th><th>$currencyStr $s_spent</th><th>$currencyStr $s_gSpent</th><th>$currencyStr $s_rMax</th><th>$s_roiMin%</th><th>$s_roiMax%</th><th>$currencyStr $s_lMin</th><th>$currencyStr $s_lMax</th><th>$s_clicks</th><th>$currencyStr $s_bidAcutal</th><th>$currencyStr $s_strategy</th><th>$currencyStr $s_bidMax</th><th>$s_margin%</th><th>-</th><th>-</th></tr>";
         }
 
+        session()->put("cmp_data", $cmpData);
         return response()->json(['status'=>true, 'data'=>$htmlContent, 'selectlist'=>$selectHtml, 'foot'=>$foot]); 
     }
 
@@ -654,7 +687,6 @@ class SheetController extends Controller
             session()->put("site_cstboost", $result['publisher_bid_modifier']['values']);
         } else if($type == "auto")
         {
-            
             $cmpSiteData = session('site_data');
             $margin = $changeval;
             $site_status_list = session('site_status_list');
@@ -678,7 +710,6 @@ class SheetController extends Controller
                     {
                         array_push($cmpBlockList, $siteid);
                     }
-
                 } 
 
                 //var_dump( $value['site_id'].':'.$value['site_name'].'  '.$value['clicks'].'  ');
@@ -692,7 +723,6 @@ class SheetController extends Controller
                     //    $bidValue = 0.025 / $value['default_bid'];
                     $bidValue = round($bidValue, 2);
                     if($bidValue > 1.3) $bidValue = 1.3;
-                    if($bidValue < 0.7) $bidValue = 0.7;
 
                     $found = array_filter($cmpCstBoost, function($v,$k) use ($siteid){
                         return $v['target'] == $siteid;
@@ -700,9 +730,27 @@ class SheetController extends Controller
 
                     if(sizeof($found) == 0) 
                     {
+                        if(1 - $bidValue > 0.1)
+                        {
+                            $bidValue = 0.9;
+                        }
+                        if($value['default_bid'] * $bidValue < 0.025) 
+                        {
+                            $bidValue = 0.025 / $value['default_bid'];
+                            $bidValue = round($bidValue, 2);
+                        }
                         array_push($cmpCstBoost, [ "target" => $siteid, "cpc_modification" => $bidValue]);
                     } else
                     {
+                        if(1 - $bidValue > 0.1)
+                        {
+                            $bidValue = $value['r_boost'] - 0.1;
+                        }
+                        if($value['default_bid'] * $bidValue < 0.025) 
+                        {
+                            $bidValue = 0.025 / $value['default_bid'];
+                            $bidValue = round($bidValue, 2);
+                        }
                         $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
                     }
                 } else if($value['roi_min'] > 0) {    //step by step control
@@ -734,8 +782,7 @@ class SheetController extends Controller
             //                     ] 
             //                 ];
 
-
-            $sendVal =  [      
+            $sendVal =  [
                             "publisher_bid_modifier" => [
                                 "values" => $cmpCstBoost
                             ] 
@@ -779,20 +826,50 @@ class SheetController extends Controller
             $result = Report::updateTaboolaCampaigns($cmpid, $sendVal);
             //session()->put("site_blocklist", $result['publisher_targeting']['value']);
             session()->put("site_cstboost", $result['publisher_bid_modifier']['values']);
+        } else if($type == "cmpstatus") //Cmp pause & play
+        {
+            $cmp_id = $siteid;
+            $status = true;
+            if($changeval == 0) $status = false;
+            $sendVal =  [      
+                'is_active' => $status
+            ];
+            Report::updateTaboolaCampaigns($cmp_id, $sendVal);
+            $allCmp = session('all_cmp_list');
+            $allCmp[$cmp_id]['is_active'] = $status;
+            session()->put('all_cmp_list', $allCmp);
+        } else if($type == "all_pause")
+        {
+            $allCmpLst = session('all_cmp_list');
+            $cmpLst = session('cmp_data');
+            $sendVal =  [      
+                'is_active' => false
+            ];
+            $count = 0;
+            foreach($cmpLst as $key => $value)
+            {
+                if($value['is_active'])
+                {
+                    Report::updateTaboolaCampaigns($key, $sendVal);
+                    $allCmpLst[$key]['is_active'] = false;
+                }
+                $count++;
+            }
+            session()->put('all_cmp_list', $allCmpLst);
         }
         return response()->json(['status'=>true]); 
     }
     
-    
     public function findCampaign($data, $id)
     {
-        foreach ($data as $key => $value) {
+        foreach ($data as $key => $value) 
+        {
             if(preg_match("/\b$id\b/i", $value[0]) || preg_match("/\b$id\b/i", $value[1]))
                 return $value;
         }
         return [];
     }
-
+    
     public function isSiteBlock($data, $site)
     {
         return in_array($site, $data);

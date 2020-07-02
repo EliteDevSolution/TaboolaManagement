@@ -41,6 +41,7 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
+                                    <th id="th_daily">Daily Delivery({{ $curcurrency }})</th>
                                     <th id="th_spent">Spent({{ $curcurrency }})</th>
                                     <th id="th_received">Has received({{ $curcurrency }})</th>
                                     <th id="th_received_max">Received Max({{ $curcurrency }})</th>
@@ -50,8 +51,11 @@
                                     <th id="th_profit_max">Profit Max({{ $curcurrency }})</th>
                                     <th>Clicks</th>
                                     <th id="th_bid_actual">BID Actual({{ $curcurrency }})</th>
+                                    <th id="th_bid_strategy">BID Strategy({{ $curcurrency }})</th>
                                     <th id="th_bid_max" width="12%">BID Max({{ $curcurrency }})</th>
                                     <th id="th_margin">Margin(%)</th>
+                                    <th id="th_start_date">Start Date</th>
+                                    <th id="th_status"></th>
                                 </tr>
                             </thead>
                             <tbody id="datatable_body">
@@ -192,6 +196,7 @@
                 {
                     $('#th_bid_max').text(`BID Amount(${$('#selcurrency').val()})`);
                     $('#th_margin').text(`BID MAX(${$('#selcurrency').val()})`);
+                    
                 }
                     
                 cb(start, end);
@@ -202,7 +207,6 @@
                 var margin = $('option:selected', this).attr('margin');
                 var cmbid = $(this).val();
                 siteView(cmbid, margin);
-
             });
             
             cb(start, end);
@@ -241,7 +245,14 @@
                         "scrollY": '60vh',
                         "scrollCollapse": true,
                         "dom": 'Bfrtip',
-                        "order":[ 1, 'desc' ],
+                        "order":[ 2, 'desc' ],
+                        "language":{
+                            "export":"example"
+                        },
+                        "fixedHeader": {
+                            header: true,
+                            footer: true
+                        },
                         "lengthMenu": [
                             [ 10, 50, 100, 500, 1000],
                             [ '10', '50', '100', '500', '1000' ]
@@ -249,14 +260,43 @@
                         "buttons": [
                             'pageLength', 
                             {
+                                text: 'All Pause',
+                                action: function ( e, dt, node, config ) {
+                                    swal({
+                                        title: 'Are you sure?',
+                                        text: "All campaign status becomes paue. You won't be able to revert this.",
+                                        type: 'warning',
+                                        showCancelButton: true,
+                                        confirmButtonClass: 'btn btn-success',
+                                        cancelButtonClass: 'btn btn-danger m-l-10',
+                                        confirmButtonText: 'Yes, change them!'
+                                    }).then(function () {
+                                        updateCampaign("all_pause", "", "", function(res)
+                                        {
+                                            //$('#selcurrency').trigger('change');
+                                        });
+                                    });
+                                }
+                            },
+                            {
                                 "extend": 'collection',
                                 "text": 'Export',
                                 "buttons": [ 'copy', 'csv', 'excel', 'pdf', 'print' ],
                                 "fade": true
                             },
-                            'colvis',
+                            {
+                                "extend": 'colvis'
+                            }
                         ],
                     });
+                    
+                    dtable.column( 3 ).visible( false, false ); //Has Rec
+                    dtable.column( 5 ).visible( false, false ); //Roi Min
+                    dtable.column( 7 ).visible( false, false ); //Profit Min
+                    dtable.column( 9 ).visible( false, false ); //Clicks
+                    
+                    
+                    dtable.columns.adjust().draw( false );
                     $.unblockUI();
                 },
                 error: function (request, status, error) {
@@ -303,6 +343,11 @@
                         $('#datatable_foot').html(res.foot);
                         $('#th_bid_max').text(`BID Amount(${$('#selcurrency').val()})`);
                         $('#th_margin').text(`BID MAX(${$('#selcurrency').val()})`);
+                        $('#th_start_date').remove();
+                        $('#th_status').remove();
+                        $('#th_daily').remove();
+                        $('#th_bid_strategy').remove();
+
                         
                         $('#selcampaigns').val(id);
                         
@@ -367,6 +412,13 @@
                                 'colvis',
                             ],
                         });
+
+                        dtable.column( 2 ).visible( false, false ); //Has Rec
+                        dtable.column( 4 ).visible( false, false ); //Roi Min
+                        dtable.column( 6 ).visible( false, false ); //Profit Min
+                        dtable.column( 8 ).visible( false, false ); //Clicks
+                        
+                        dtable.columns.adjust().draw( false );
 
                         $('.select2-container').css('left', '655px');
                         $.unblockUI();
@@ -929,6 +981,32 @@
                 }
             });
 
+        }
+
+        function setCmpPause(obj)
+        {
+            let status = $(obj).attr('status');
+            let cmpid = $(obj).attr('cmp-id');
+            let value = 1;  //1:play, 0:pause
+            if(status == "play")
+                value = 1;
+            else if(status == "pause")
+                value = 0;
+            updateCampaign("cmpstatus", cmpid, value, function(res)
+            {
+                if(value == 0)
+                {
+                    $(obj).attr('class', 'btn btn-success waves-effect waves-light btn-sm');
+                    $(obj).attr('status', 'play');
+                    $(obj).html('<i class="mdi mdi-play"></i>');
+                }
+                else if(value == 1)
+                {
+                    $(obj).attr('class', 'btn btn-danger waves-effect waves-light btn-sm');
+                    $(obj).attr('status', 'pause');
+                    $(obj).html('<i class="mdi mdi-pause"></i>');
+                }
+            });
         }
 
         function  updateCampaign(type, site_id, value, callback)
