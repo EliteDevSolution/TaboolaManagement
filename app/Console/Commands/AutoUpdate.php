@@ -121,11 +121,9 @@ class AutoUpdate extends Command
             if($spent == 0)
             {
                 $roiMin = $gSpent / 100;
-                $roiMax = $rMax / 100;    
             } else
             {
                 $roiMin = ($gSpent - $spent) / $spent  * 100;
-                $roiMax = ($rMax - $spent) / $spent * 100;    
             }
 
             if($roiMin == 0) continue;
@@ -136,8 +134,6 @@ class AutoUpdate extends Command
             if($clicks > 0)
                 $bidMax = $rMax / $clicks * $marginVal;
 
-
-
             if($curMargin / $roiMin <= 5 && $bidMax < 0.025 && $clicks > 10)
             {
                 if(!in_array($sitetitle, $cmpBlockList))
@@ -145,7 +141,7 @@ class AutoUpdate extends Command
                     array_push($cmpBlockList, $sitetitle);
                 }
 
-            } 
+            }
             if($clicks >= 10)    //Bid amount update condition
             {
                 $bidValue = $bidMax / $cmpBidAmount;
@@ -183,6 +179,7 @@ class AutoUpdate extends Command
                         $bidValue = 0.025 / $cmpBidAmount;
                         $bidValue = round($bidValue, 2);
                     }
+                    if($bidValue < 0.7) $bidValue = 0.7;
                     $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
                 }
             } else if($roiMin > 0) {    //step by step control

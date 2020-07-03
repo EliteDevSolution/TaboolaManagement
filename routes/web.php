@@ -78,6 +78,9 @@ Route::prefix('admin')->group(function () {
 	Route::post('/sheet/setcurrency', 'Admin\SheetController@setCurrencyValue')->name('sheet.setcurrency');
 	Route::post('/sheet/getcurrency', 'Admin\SheetController@getCurrencyInfo')->name('sheet.getcurrency');
 	Route::post('/sheet/sitechangestatus', 'Admin\SheetController@changeSiteStatus')->name('sheet.sitechangestatus');
+	Route::post('/sheet/cmpdailychange', 'Admin\SheetController@changeCmpDailyValue')->name('sheet.setcmpdaily');
+	Route::post('/sheet/cmpstrategychange', 'Admin\SheetController@changeCmpStrategyValue')->name('sheet.setcmpstrategy');
+	
 
 	Route::resource('/reports', 'Admin\ReportsController');
 	Route::get('/getanalysisjson', 'Admin\ReportsController@getAnalysisJson');

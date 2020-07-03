@@ -50,12 +50,18 @@ class DashboardController extends Controller
         $returnUsers = GoogleAnalytics::returnUsers();
         $users_country = GoogleAnalytics::usersCountry();
 
-        $curDate = session('dashboard_date');
-        //$curDate = date('Y-m-d', strtotime("-1 days"));
-        if(!isset($curDate)) $curDate = date('Y-m-d');
+        $start_date = session('rep_start_date');
+        $end_date = session('rep_end_date');
 
+        if(!isset($start_date))
+        {
+            //$end_date = date('Y-m-d');
+            //$start_date = date('Y-m-d');
+            $start_date = date('Y-m-d', strtotime("-1 days"));
+            $end_date = date('Y-m-d', strtotime("-1 days"));
 
-        
+        }
+       
         return view('admin.dashboard', [
             'title' => 'Dashboard',
             'allusercount' => 0,
@@ -72,14 +78,18 @@ class DashboardController extends Controller
             'ana_users' => $anaUsers,
             'return_users' => $returnUsers,
             'users_country' => $users_country,
-            'rep_start_date' => $curDate,
+            'rep_start_date' => $start_date,
+            'rep_end_date' => $end_date
         ]);
     }
 
     public function getTotalValue(Request $request)
     {
-        $curDate = $request->get('cur_date');
-        session()->put("dashboard_date", $curDate);
+        $start_date = $request->get('startDate');
+        $end_date = $request->get('endDate');
+        session()->put("rep_start_date", $start_date);
+        session()->put("rep_end_date", $end_date);
+
         $currencyType = intval(session('currency_type'));
         $currency = "BRL";
         if($currencyType == 0)  //Auto Method...
@@ -93,8 +103,7 @@ class DashboardController extends Controller
             $currecyMaxRate = floatval(session('currency_m_max_'.$currency));
             $braRate = session('currency_m_BRL');
         }
-        $start_date = $curDate;
-        $end_date =  $curDate;
+        
 
         $res = Report::getTaboolaCampaigns($start_date, $end_date);
         
@@ -142,8 +151,9 @@ class DashboardController extends Controller
             $gSpent = $findVal[2]*$currencyRate;
 
             $rMax = $gSpent/$currencyRate*$currecyMaxRate;
-            $roiMax = ($rMax - $spent) / $spent * 100;    
+            
             $lMax = $gSpent/$currencyRate*$currecyMaxRate - $spent;
+            $roiMax = $lMax / $spent * 100;
             
             $s_spent += $spent;
             $s_gSpent += $gSpent;
@@ -159,10 +169,17 @@ class DashboardController extends Controller
             return response()->json(['status'=>false]);
         } else
         {
+            if($s_spent == 0)
+            {
+                $s_roiMax = number_format(round($s_lMax / 1 * 100, 2), 2, '.', ',');
+            }
+            else                
+            {
+                $s_roiMax = number_format(round($s_lMax / $s_spent * 100, 2), 2, '.', ',');
+            }
             $s_spent = number_format(round($s_spent, 2), 2, '.', ',');
             $s_rMax = number_format(round($s_rMax, 2), 2, '.', ',');
             $s_lMax = number_format(round($s_lMax, 2), 2, '.', ',');
-            $s_roiMax = number_format(round($s_roiMax/$count, 2), 2, '.', ',');
             return response()->json(['status'=>true, 's_spent' => $s_spent, 's_rmax' => $s_rMax, 's_lmax' => $s_lMax, 's_roimax' => $s_roiMax]);
         }
     }

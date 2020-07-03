@@ -41,7 +41,7 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th id="th_daily">Daily Delivery({{ $curcurrency }})</th>
+                                    <th id="th_daily" width="8%">Daily Delivery({{ $curcurrency }})</th>
                                     <th id="th_spent">Spent({{ $curcurrency }})</th>
                                     <th id="th_received">Has received({{ $curcurrency }})</th>
                                     <th id="th_received_max">Received Max({{ $curcurrency }})</th>
@@ -52,9 +52,9 @@
                                     <th>Clicks</th>
                                     <th id="th_bid_actual">BID Actual({{ $curcurrency }})</th>
                                     <th id="th_bid_strategy">BID Strategy({{ $curcurrency }})</th>
-                                    <th id="th_bid_max" width="12%">BID Max({{ $curcurrency }})</th>
+                                    <th id="th_bid_max">BID Max({{ $curcurrency }})</th>
                                     <th id="th_margin">Margin(%)</th>
-                                    <th id="th_start_date">Start Date</th>
+                                    <th id="th_start_date" width="8%">Start Date</th>
                                     <th id="th_status"></th>
                                 </tr>
                             </thead>
@@ -238,10 +238,12 @@
                     $('#datatable_foot').html(res.foot);
                     $('#selcampaigns').html(res.selectlist);
                     $('#selcampaigns').select2();
-
+                    $('#sheet_title').attr('bid-admount-limit', res.bidamountlimit);
+                    $('#sheet_title').attr('bid-daily-limit', res.dailylimit);
 
                     dtable = $('#datatable_sheet_data').DataTable({
                         stateSave: true,
+                        "autoWidth": false,
                         "scrollY": '60vh',
                         "scrollCollapse": true,
                         "dom": 'Bfrtip',
@@ -293,7 +295,7 @@
                     dtable.column( 3 ).visible( false, false ); //Has Rec
                     dtable.column( 5 ).visible( false, false ); //Roi Min
                     dtable.column( 7 ).visible( false, false ); //Profit Min
-                    dtable.column( 9 ).visible( false, false ); //Clicks
+                    //dtable.column( 9 ).visible( false, false ); //Clicks
                     
                     
                     dtable.columns.adjust().draw( false );
@@ -344,7 +346,7 @@
                         $('#th_bid_max').text(`BID Amount(${$('#selcurrency').val()})`);
                         $('#th_margin').text(`BID MAX(${$('#selcurrency').val()})`);
                         $('#th_start_date').remove();
-                        $('#th_status').remove();
+                        //$('#th_status').remove();
                         $('#th_daily').remove();
                         $('#th_bid_strategy').remove();
 
@@ -354,6 +356,7 @@
 
                         dtable = $('#datatable_sheet_data').DataTable({
                             stateSave: true,
+                            "autoWidth": false,
                             "scrollY": '60vh',
                             "scrollCollapse": true,
                             "dom": 'Bfrtip',
@@ -416,7 +419,7 @@
                         dtable.column( 2 ).visible( false, false ); //Has Rec
                         dtable.column( 4 ).visible( false, false ); //Roi Min
                         dtable.column( 6 ).visible( false, false ); //Profit Min
-                        dtable.column( 8 ).visible( false, false ); //Clicks
+                        //dtable.column( 8 ).visible( false, false ); //Clicks
                         
                         dtable.columns.adjust().draw( false );
 
@@ -442,7 +445,7 @@
                     <div for="" class="control-label popupcelleditor-label mb-2 header-title">Margin Percent </div>
                     <label class="radio">
                         <span style="vertical-align: top">Value: </span>
-                        <input type="number" min="0" max="400" require id="margin_${cmp_id}" value="${cur_val}" style="    text-align: right;">
+                        <input type="number" min="0" max="400" require id="margin_${cmp_id}" value="${cur_val}" style="text-align: right;">
                         <span class="add-on">%</span>
                     </label>
                 </div>            
@@ -463,6 +466,177 @@
                 });
 
                 $(obj).popover('show');
+        }
+
+        function showDailyPopover(obj)
+        {
+            let cmp_id = $(obj).attr('cmp-id');
+            let cur_val = parseFloat($(obj).attr('data-value'));
+            $('[data-toggle="popover"]').popover('dispose');
+            let currency = $('#selcurrency').val();
+            let currencyStr = 'R$';
+
+            if(currency == "USD") currencyStr = '$';
+
+            var contentHtml = `
+                <div data-toggle='popover_div'>
+                    <div for="" class="control-label popupcelleditor-label mb-2 header-title">Daily Delivery</div>
+                    <label class="radio">
+                        <span style="vertical-align: top">Value: </span>
+                        <input type="number" min="0" max="10000" require id="daily_${cmp_id}" value="${cur_val}" style="text-align: right;">
+                        <span class="add-on"> ${currencyStr}</span>
+                    </label>
+                </div>            
+                <div class="form-actions float-right mb-1">
+                    <button name="save" class="btn btn-secondary" data-id="${cmp_id}" onclick="saveDaily(this)">
+                    OK <i data-type="icon-ok" class="mdi mdi-check"></i></button>
+                    <button data-novalidate="" class="btn btn-secondary" type="submit" onclick="hidePopover()">
+                    Cancel</button>
+                </div>`;
+
+                $(obj).popover({
+                    animation: false,
+                    html: true,
+                    sanitize: false,
+                    placement: 'left',
+                    trigger: 'manual',
+                    content: contentHtml,
+                });
+
+                $(obj).popover('show');
+        }
+
+        function showStrategyPopover(obj)
+        {
+            let cmp_id = $(obj).attr('cmp-id');
+            let cur_val = parseFloat($(obj).attr('data-value'));
+            $('[data-toggle="popover"]').popover('dispose');
+            let currency = $('#selcurrency').val();
+            let currencyStr = 'R$';
+
+            if(currency == "USD") currencyStr = '$';
+
+            var contentHtml = `
+                <div data-toggle='popover_div'>
+                    <div for="" class="control-label popupcelleditor-label mb-2 header-title">Bid Strategy</div>
+                    <label class="radio">
+                        <span style="vertical-align: top">Value: </span>
+                        <input type="number" min="0" max="10" step="0.001" require id="strategy_${cmp_id}" value="${cur_val}" style="text-align: right;">
+                        <span class="add-on"> ${currencyStr}</span>
+                    </label>
+                </div>            
+                <div class="form-actions float-right mb-1">
+                    <button name="save" class="btn btn-secondary" data-id="${cmp_id}" onclick="saveStrategy(this)">
+                    OK <i data-type="icon-ok" class="mdi mdi-check"></i></button>
+                    <button data-novalidate="" class="btn btn-secondary" type="submit" onclick="hidePopover()">
+                    Cancel</button>
+                </div>`;
+
+                $(obj).popover({
+                    animation: false,
+                    html: true,
+                    sanitize: false,
+                    placement: 'left',
+                    trigger: 'manual',
+                    content: contentHtml,
+                });
+
+                $(obj).popover('show');
+        }
+
+        function saveDaily(obj)
+        {
+            var cmp_id = $(obj).attr('data-id');
+            var dailyVal = parseFloat($(`#daily_${cmp_id}`).val());
+            var dailyMin  = parseFloat($('#sheet_title').attr('bid-daily-limit'));
+            console.log(cmp_id);
+            console.log(dailyVal);
+            console.log(dailyMin);
+
+            var dailyMax = 10000;
+            
+            if(dailyVal < dailyMin || dailyVal > dailyMax || isNaN(dailyVal))
+            {
+                $('#daily_' + cmp_id).focus();
+                toastr.warning(`Error while saving update: Daily Delivery value is invalid.`, 'Warning!');
+                return false;      
+            }
+
+            let currency = $('#selcurrency').val();
+
+            hidePopover();
+            blockUI();
+            $.ajax({
+                url: "{{ route('sheet.setcmpdaily') }}",
+                type : "POST",
+                headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                data : {
+                    value:dailyVal,
+                    cmp_id:cmp_id,
+                    currency:currency
+                },
+                success : function(res) {
+                    
+                    let currencyStr = 'R$';
+
+                    if(currency == "USD") currencyStr = '$';
+                    $('#bid_daily_' + cmp_id).attr('data-value', res.daily_cap);
+                    $('#bid_daily_' + cmp_id).text(currencyStr + ' ' + res.f_daily_cap);
+
+                    $.unblockUI();
+                    toastr.success("The operation is success.", "Success!");
+                },
+                error: function (request, status, error) {
+                    toastr.error("Data loading error!", "Error");
+                    $.unblockUI();
+                }
+            });
+
+        }
+
+        function saveStrategy(obj)
+        {
+            var cmp_id = $(obj).attr('data-id');
+            var strategyVal = parseFloat($(`#strategy_${cmp_id}`).val());
+            var strategyMin  = parseFloat($('#sheet_title').attr('bid-admount-limit'));
+            var strategyMax = 10;
+            
+            if(strategyVal < strategyMin || strategyVal > strategyMax || isNaN(strategyVal))
+            {
+                $('#strategy_' + cmp_id).focus();
+                toastr.warning(`Error while saving update: Bid Strategy value is invalid.`, 'Warning!');
+                return false;      
+            }
+
+            let currency = $('#selcurrency').val();
+
+            hidePopover();
+            blockUI();
+            $.ajax({
+                url: "{{ route('sheet.setcmpstrategy') }}",
+                type : "POST",
+                headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                data : {
+                    value:strategyVal,
+                    cmp_id:cmp_id,
+                    currency:currency
+                },
+                success : function(res) {
+                    
+                    let currencyStr = 'R$';
+
+                    if(currency == "USD") currencyStr = '$';
+                    $('#bid_strategy_' + cmp_id).attr('data-value', res.bid_strategy);
+                    $('#bid_strategy_' + cmp_id).html(`${currencyStr} ${res.bid_strategy}<br> (${res.bid_type})`);
+
+                    $.unblockUI();
+                    toastr.success("The operation is success.", "Success!");
+                },
+                error: function (request, status, error) {
+                    toastr.error("Data loading error!", "Error");
+                    $.unblockUI();
+                }
+            });   
         }
 
         function saveMargin(obj)
@@ -570,7 +744,6 @@
                     Cancel</button>
                 </div>`;
             }
-
 
             $(obj).popover({
                 animation: false,

@@ -8,11 +8,10 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <div class="m-b-10 list-inline float-right" id="dashdate" style="cursor: pointer;width: 196px;">
+                <div class="m-b-10 col-md-2 list-inline float-right" id="dashdate" style="border-bottom: 1px solid;border-bottom-color: #aeaeae;cursor: pointer;">
                     <i class="fa fa-calendar"></i>&nbsp;
                     <span></span> <i class="fa fa-caret-down"></i>
                 </div>    
-                
             </div>
 
             <div class="col-md-6 col-lg-6 col-xl-3">
@@ -341,30 +340,43 @@
 
             var start = new Date("{{ $rep_start_date }}".replace( /(\d{4})-(\d{2})-(\d{2})/, "$1/$2/$3"));
             start = moment(start);
-            var dtable;
+            var end = new Date("{{ $rep_end_date }}".replace( /(\d{4})-(\d{2})-(\d{2})/, "$1/$2/$3"));
+            end = moment(end);
 
-            function cb(cstart) {
-               $('#dashdate span').html(cstart.format('MMMM D, YYYY'));
+            function cb(cstart, cend) {
+               $('#dashdate span').html(cstart.format('MMMM D, YYYY') + '~' + cend.format('MMMM D, YYYY'));
 
                 // Grab the datatables input box and alter how it is bound to events
                 start_date = cstart.format('YYYY-MM-DD');
+                end_date = cend.format('YYYY-MM-DD');
                 start = cstart;
-                getTotalValues(start_date);
+                end = cend;
+                getTotalValues(start_date, end_date);
             }
 
             $('#dashdate').daterangepicker({
                 startDate: start,
-                singleDatePicker: true,
-                showDropdowns: true,
+                endDate: end,
+                showDropdowns: false,
+                linkedCalendars: true,
                 maxDate: moment().format('MM/DD/YYYY'), 
-                minDate: moment().subtract(2, 'years').format('MM/DD/YYYY')
+                minDate: moment().subtract(2, 'years').format('MM/DD/YYYY'),
+                ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
             }, cb);
+
             
-            cb(start);
+            cb(start, end);
 
         });
 
-        function getTotalValues(curDate)
+        function getTotalValues(startDate, endDate)
         {
             blockUI();
 
@@ -373,7 +385,8 @@
                 type : "POST",
                 headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
                 data : {
-                    cur_date:curDate,
+                    startDate:startDate,
+                    endDate:endDate
                 },
                 success : function(res) {
                     if(res.status === false)
