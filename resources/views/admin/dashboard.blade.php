@@ -11,7 +11,19 @@
                 <div class="m-b-10 col-md-2 list-inline float-right" id="dashdate" style="border-bottom: 1px solid;border-bottom-color: #aeaeae;cursor: pointer;">
                     <i class="fa fa-calendar"></i>&nbsp;
                     <span></span> <i class="fa fa-caret-down"></i>
-                </div>    
+                </div>
+                @if(Auth::guard('admin')->user()->is_super == true) 
+                Viewids:
+                <select class="minimal" id="selviewids" class="m-b-12 col-md-3 list-inline" style="margin-top:-20px;border:none;background-color: #fafafa;color: #292b2c">
+                    @foreach ($view_ids as $key => $val)
+                        @if($val == $cur_view_id)
+                            <option value="{{ $val }}" selected>{{ $val }} ( {{ 'https://'.$view_id_urls[$key] }} )</option>
+                        @else
+                            <option value="{{ $val }}">{{ $val }} ( {{ 'https://'.$view_id_urls[$key] }} )</option>
+                        @endif
+                    @endforeach
+                </select>
+                @endif
             </div>
 
             <div class="col-md-6 col-lg-6 col-xl-3">
@@ -371,7 +383,26 @@
                 }
             }, cb);
 
-            
+            $('#selviewids').on('change', function(evt)
+            {
+                let cur_view_id = $('#selviewids').val();
+                $.ajax({
+                    url: "{{ route('dashboard.changeviewid') }}",
+                    type : "POST",
+                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                    data : {
+                        cur_view_id: cur_view_id
+                    },
+                    success : function(res) {
+                        location.href = "{{ route('dashboard') }}";
+                    },
+                    error: function (request, status, error) {
+                        toastr.error("Data loading error!", "Error");
+                        $.unblockUI();
+                    }
+                });   
+            });
+
             cb(start, end);
 
         });
@@ -389,6 +420,8 @@
                     endDate:endDate
                 },
                 success : function(res) {
+                    
+
                     if(res.status === false)
                     {
                         $('#s_spend_total').text('R$ 0');
@@ -411,8 +444,7 @@
             });
         }
         
-
-
+        
     
     // Start flot.init.js
         new Chart(document.getElementById("line-chart1"), {
@@ -794,12 +826,13 @@
 
     // Start datatables.init.js
         $(document).ready(function() {
+            $('#datatable1').DataTable().destroy();
             $('#datatable1').DataTable({
-                 "scrollY": '60vh',
-                 "scrollCollapse": true,
-                 "order": [[ 1, "desc" ]],
-                 "searching": false, 
-                 "info": false
+                "scrollY": '60vh',
+                "scrollCollapse": true,
+                "order": [[ 1, "desc" ]],
+                "searching": false, 
+                "info": false
             });
         } );
         

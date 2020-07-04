@@ -34,14 +34,33 @@ class DashboardController extends Controller
         $end_date = date('Y-m-d');
         $start_date = date('Y-m-d', strtotime("-1 months"));
         //$aaa = GoogleAnalytics::report("ga:" . env('ANALYTICS_VIEW_ID'), $dementionLst, $matrixLst, $start_date, $end_date);
-
         //$allUserCount = User::all()->count();
         //$newUserCount = User::newUserCountRecently(1);
         //$time_tool = GoogleAnalytics::getTimeTool();
+
+        $cur_view_id = session('cur_view_id');
+
+        if(!isset($cur_view_id))
+        {
+            $cur_view_id = session('view_ids')[0];
+        }
+
+        if(Auth::guard('admin')->user()->is_super == true) {
+            $viewid =$cur_view_id;
+        } else
+        {
+            $viewid = session('view_id');
+        }
+
+        $view_ids = session('view_ids');
+        $view_id_urls = session('view_id_urls');
+
+        GoogleAnalytics::setViewId($viewid);
+
         $allCampaigns = GoogleAnalytics::getCampaigns();
         //$time_reference = GoogleAnalytics::getTimeReference();
-        $activeUsers = GoogleAnalytics::activeUsersNow();
-        $activePages = GoogleAnalytics::activePagesNow();
+        $activeUsers = GoogleAnalytics::activeUsersNow($viewid);
+        $activePages = GoogleAnalytics::activePagesNow($viewid);
         $topDevices = GoogleAnalytics::topDevices();
         $rsCountry = Score::rankByCountry();
         $rsActivity = Score::rankByActivity();
@@ -79,8 +98,18 @@ class DashboardController extends Controller
             'return_users' => $returnUsers,
             'users_country' => $users_country,
             'rep_start_date' => $start_date,
-            'rep_end_date' => $end_date
+            'rep_end_date' => $end_date,
+            'cur_view_id' => $cur_view_id, 
+            'view_ids' => $view_ids, 
+            'view_id_urls' => $view_id_urls
         ]);
+    }
+
+    public function changeViewid(Request $request)
+    {
+        $view_id = $request->get('cur_view_id');
+        session()->put("cur_view_id", $view_id);
+        return response()->json(['status'=>true]);
     }
 
     public function getTotalValue(Request $request)
@@ -112,10 +141,13 @@ class DashboardController extends Controller
         
         $dementionLst = ['ga:adContent','ga:source'];
         $matrixLst = ['ga:adsenseRevenue', 'ga:adsenseAdsClicks', 'ga:adsensePageImpressions', 'ga:adsenseCTR', 'ga:adsenseECPM'];
+        
         $main_view_id = session('view_id');
         $extra_view_ids = session('view_id_merge');
         
         $view_ids = explode(",", $main_view_id.','.$extra_view_ids);
+        
+        
         $result = [];
 
         if(Auth::guard('admin')->user()->is_super == true) {    //Is super admin = 1

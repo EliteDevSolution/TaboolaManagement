@@ -6,6 +6,7 @@ use DLW\Models\Report;
 use Illuminate\Http\Request;
 use DLW\Http\Controllers\Controller;
 use DLW\Libraries\GoogleAnalytics;
+use Illuminate\Support\Facades\Auth;
 
 
 use Analytics;
@@ -29,6 +30,7 @@ class ReportsController extends Controller
         
         $start_date = session('rep_start_date');
         $end_date = session('rep_end_date');
+        $cur_view_id = session('cur_view_id');
 
         if(!isset($start_date))
         {
@@ -37,12 +39,20 @@ class ReportsController extends Controller
             //$start_date = date('Y-m-d', strtotime("-1 days"));
         }
 
+        if(!isset($cur_view_id))
+        {
+            $cur_view_id = "";
+        }
+
+        $view_ids = session('view_ids');
+        $view_id_urls = session('view_id_urls');
+
         if(isset($prev_currency) && $prev_currency != "")
         {
             $cur_currency = $prev_currency;
         }
         //[ToboolaAccessToken: '.substr(session('access_token'),30).'...]
-        return view('admin.reports.index', ['title' => 'Report', 'currencies' => $currencies, 'curcurrency' => $cur_currency, 'rep_start_date' => $start_date, 'rep_end_date' => $end_date]);
+        return view('admin.reports.index', ['title' => 'Report', 'currencies' => $currencies, 'curcurrency' => $cur_currency, 'rep_start_date' => $start_date, 'rep_end_date' => $end_date, 'cur_view_id' => $cur_view_id, 'view_ids' => $view_ids, 'view_id_urls' => $view_id_urls]);
     }
 
     public function getAnalysisJson(Request $request)
@@ -54,7 +64,16 @@ class ReportsController extends Controller
         $start_date = $request->get('start_date');
         $end_date = $request->get('end_date');
         $currency = $request->get('currency');
+        $curviewid = $request->get('curviewid');
+        session()->put("cur_view_id", $curviewid);
 
+        if(Auth::guard('admin')->user()->is_super == true) {
+            $viewid ="ga:".$curviewid;
+        } else
+        {
+            $viewid ="ga:".session('view_id');
+        }
+        
         //date range keep session...///
         session()->put("rep_start_date", $start_date);
         session()->put("rep_end_date", $end_date);
@@ -104,7 +123,7 @@ class ReportsController extends Controller
 
         //$end_date = date('Y-m-d');
         //$start_date = date('Y-m-d', strtotime("-1 months"));
-        $resdata = GoogleAnalytics::report($dementionLst, $matrixLst, $start_date, $end_date, $start + 1, $length, $filterLst, $sort);
+        $resdata = GoogleAnalytics::report($viewid, $dementionLst, $matrixLst, $start_date, $end_date, $start + 1, $length, $filterLst, $sort);
 
         $resItems = [];
         foreach($resdata['items'] as $value)

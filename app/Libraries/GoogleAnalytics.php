@@ -9,7 +9,12 @@ class GoogleAnalytics{
 
     public function __construct()
     {
-        Analytics::setViewId(session('view_id'));
+
+    }
+
+    static function setViewId($viewid)
+    {
+        Analytics::setViewId($viewid);
     }
 
     static function usersCountry() {
@@ -66,14 +71,14 @@ class GoogleAnalytics{
         return date('h:m:s', $val);
     }
 
-    static function activeUsersNow(){
-        $activeUsers = Analytics::getAnalyticsService()->data_realtime->get('ga:'.session('view_id'), 'rt:activeUsers')->rows[0][0];
+    static function activeUsersNow($viewid){
+        $activeUsers = Analytics::getAnalyticsService()->data_realtime->get('ga:'.$viewid, 'rt:activeUsers')->rows[0][0];
         if(($activeUsers==null)||($activeUsers=='')) $activeUsers = 0;
         return $activeUsers; 
     }
 
-    static function activePagesNow(){
-        $activePages = Analytics::getAnalyticsService()->data_realtime->get('ga:'.session('view_id'), 'rt:pageviews', ['dimensions'=>'rt:pagePath', 'max-results'=>10]);
+    static function activePagesNow($viewid){
+        $activePages = Analytics::getAnalyticsService()->data_realtime->get('ga:'.$viewid, 'rt:pageviews', ['dimensions'=>'rt:pagePath', 'max-results'=>10]);
         return $activePages->rows;
     }
 
@@ -99,14 +104,14 @@ class GoogleAnalytics{
         return $result->rows;
     }
 
-    static function report($dimensions, $metrics, $start_date, $end_date, $start_index=1, $max_results=10, $filter_lst=[], $sort=''){
+    static function report($view, $dimensions, $metrics, $start_date, $end_date, $start_index=1, $max_results=10, $filter_lst=[], $sort=''){
         // to make the request quicker
         
         // query the last month analytics
 
         // if( !is_array( $dimensions ) )
         // 	$dimensions = array( $dimensions );
-        $view ="ga:".session('view_id');
+        //$view ="ga:".session('view_id');
     
         $dimensions = implode( ",", $dimensions );
         $metrics = implode( ",", $metrics );

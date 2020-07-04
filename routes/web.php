@@ -50,6 +50,7 @@ Route::middleware('ajax')->group(function () {
 Route::prefix('admin')->group(function () {
 	Route::get('/', 'Admin\DashboardController@index')->name('dashboard');
 	Route::post('/dashboard/gettotal', 'Admin\DashboardController@getTotalValue')->name('dashboard.gettotal');
+	Route::post('/dashboard/changeviewid', 'Admin\DashboardController@changeViewid')->name('dashboard.changeviewid');
 	
 	Route::get('/login', 'Admin\Auth\LoginController@showLoginForm')->name('admin.login');
 	Route::get('/register', 'Auth\RegisterController@showAdminRegisterForm');

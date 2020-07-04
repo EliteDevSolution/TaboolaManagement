@@ -201,18 +201,18 @@ class SheetController extends Controller
             if(!empty($cmpBlockList))
                 $site_block = $this->isSiteBlock($cmpBlockList, $site_name);
 
-            
             if(!empty($cmpCstBoost))
             {
                 $cstboost = $this->findSiteBoostValue($cmpCstBoost, $site_name);
                 $r_cstboost = ($cstboost - 1) * 100;
-                if($cstboost != 1)
+                if($cstboost != 1 && round($r_cstboost, 3) != 0)
                 {
                     $cstboost_percent = strval($r_cstboost).'%';    
                 }
             }
 
             $bidAmount = $cmpBidAmount * $cstboost / floatval($braRate)*$currencyRate;
+
             $marginVal = (100 - floatval($cmp_margin)) / 100;
             $bidMax = $rMax * $marginVal;
             
@@ -475,6 +475,7 @@ class SheetController extends Controller
         $extra_view_ids = session('view_id_merge');
         //var_dump($extra_view_ids);exit;
         $view_ids = explode(",", $main_view_id.','.$extra_view_ids);
+        
         $result = [];
 
         if(Auth::guard('admin')->user()->is_super == true) {    //Is super admin = 1
@@ -759,11 +760,9 @@ class SheetController extends Controller
 
         } else if($type == "boost")
         {
-            
             $found = array_filter($cmpCstBoost, function($v,$k) use ($siteid){
                     return $v['target'] == $siteid;
             }, ARRAY_FILTER_USE_BOTH); 
-
             if(empty($found)) 
             {
                 array_push($cmpCstBoost, [ "target" => $siteid, "cpc_modification" => floatval($changeval) ]);
@@ -779,6 +778,18 @@ class SheetController extends Controller
             ]; 
 
             $result = Report::updateTaboolaCampaigns($cmpid, $sendVal);
+            
+            $tmpCmpSiteData = session('site_data');
+
+            $site_found = array_filter($tmpCmpSiteData, function($v,$k) use ($siteid){
+                return $v['site_name'] == $siteid;
+            }, ARRAY_FILTER_USE_BOTH); 
+
+            if(sizeof($site_found) > 0)
+            {
+                $tmpCmpSiteData[array_keys($site_found)[0]]['r_boost'] = floatval($changeval);
+                session()->put('site_data', $tmpCmpSiteData);
+            }
             session()->put("site_cstboost", $result['publisher_bid_modifier']['values']);
         } else if($type == "auto")
         {

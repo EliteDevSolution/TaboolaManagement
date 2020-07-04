@@ -140,7 +140,6 @@ class AutoUpdate extends Command
                 {
                     array_push($cmpBlockList, $sitetitle);
                 }
-
             }
             if($clicks >= 10)    //Bid amount update condition
             {

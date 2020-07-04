@@ -31,8 +31,12 @@ class LoginController extends Controller
         $client_secret = env("TO_CLIENT_SECRET");
         $account_name = env("TO_ACCOUNT_NAME");
         $view_id_merge = env("SUPER_ADMIN_MERGE_VIEW_IDS");
-
+        $view_ids = explode(",", $view_id.','.$view_id_merge);
+        $viwe_id_urls = explode(",", env('MAIN_VIEW_URL').','.env('MERGE_VIEW_URLS'));
+        
         session()->put('view_id_merge', $view_id_merge);
+        session()->put('view_ids', $view_ids);
+        session()->put('view_id_urls', $viwe_id_urls);
 
         //var_dump(session('view_id_merge'));exit;
         if(!isset($client_id) || $client_id == "")

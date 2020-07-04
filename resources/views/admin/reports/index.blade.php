@@ -20,8 +20,22 @@
                     <div class="m-b-10 col-md-2 list-inline float-right" id="reportrange" style="border-bottom: 1px solid;border-bottom-color: #aeaeae;cursor: pointer;">
                         <i class="fa fa-calendar"></i>&nbsp;
                         <span></span> <i class="fa fa-caret-down"></i>
-                    </div>    
+                    </div>
+                    @if(Auth::guard('admin')->user()->is_super == true) 
+                    <span class="ml-3"></span>
+                    Viewids: 
+                    <select class="minimal" id="selviewids" class="m-b-10 col-md-3 list-inline" style="border:none;background-color: #fafafa;color: #292b2c">
+                        @foreach ($view_ids as $key => $val)
+                            @if($val == $cur_view_id)
+                                <option value="{{ $val }}" selected>{{ $val }} ( {{ 'https://'.$view_id_urls[$key] }} )</option>
+                            @else
+                                <option value="{{ $val }}">{{ $val }} ( {{ 'https://'.$view_id_urls[$key] }} )</option>
+                            @endif
+                        @endforeach
+                    </select>
+                    @endif
             </div>
+            
             <div class="col-12">
                 <div class="card m-b-20">
                     <div class="card-block">
@@ -113,6 +127,9 @@
                 start_date = cstart.format('YYYY-MM-DD');
                 end_date = cend.format('YYYY-MM-DD');
                 currency = $('#selcurrency').val();
+                curviewid = "";
+                curviewid = $('#selviewids').val();
+
                 $('#datatable_data').DataTable().destroy();
                 dtable = $('#datatable_data').DataTable( {
                     "processing": true,
@@ -136,7 +153,7 @@
                     ],
                     "ajax": {
                         url: "{{ url('admin/getanalysisjson') }}",
-                        data: { 'start_date':start_date, 'end_date':end_date, 'currency': currency }
+                        data: { 'start_date':start_date, 'end_date':end_date, 'currency': currency, 'curviewid': curviewid}
                         },
                     "columns": [
                         { data: '0', name: 'ga:adContent'},
@@ -211,8 +228,11 @@
                 cb(start, end);
             });
 
+            $('#selviewids').on('change', function(evt)
+            {
+                cb(start, end);
+            });
             cb(start, end);
-
         });
 
         
