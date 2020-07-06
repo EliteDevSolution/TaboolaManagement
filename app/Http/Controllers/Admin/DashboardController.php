@@ -39,22 +39,17 @@ class DashboardController extends Controller
         //$time_tool = GoogleAnalytics::getTimeTool();
 
         $cur_view_id = session('cur_view_id');
-
-        if(!isset($cur_view_id))
-        {
-            $cur_view_id = session('view_ids')[0];
-        }
-
-        if(Auth::guard('admin')->user()->is_super == true) {
-            $viewid =$cur_view_id;
-        } else
-        {
-            $viewid = session('view_id');
-        }
-
         $view_ids = session('view_ids');
         $view_id_urls = session('view_id_urls');
 
+
+        if(!isset($cur_view_id))
+        {
+            $cur_view_id = $view_ids[0];
+        }
+
+        $viewid =$cur_view_id;
+        
         GoogleAnalytics::setViewId($viewid);
 
         $allCampaigns = GoogleAnalytics::getCampaigns();
@@ -142,21 +137,11 @@ class DashboardController extends Controller
         $dementionLst = ['ga:adContent','ga:source'];
         $matrixLst = ['ga:adsenseRevenue', 'ga:adsenseAdsClicks', 'ga:adsensePageImpressions', 'ga:adsenseCTR', 'ga:adsenseECPM'];
         
-        $main_view_id = session('view_id');
-        $extra_view_ids = session('view_id_merge');
-        
-        $view_ids = explode(",", $main_view_id.','.$extra_view_ids);
-        
+        $view_ids = session('view_ids');
         
         $result = [];
-
-        if(Auth::guard('admin')->user()->is_super == true) {    //Is super admin = 1
-            foreach ($view_ids as $key => $value) {
-                $result = array_merge($result, GoogleAnalytics::getAllCampaign($value, $dementionLst, $matrixLst, $start_date, $end_date));
-            }
-
-        } else {
-            $result = GoogleAnalytics::getAllCampaign($main_view_id, $dementionLst, $matrixLst, $start_date, $end_date);
+        foreach ($view_ids as $key => $value) {
+            $result = array_merge($result, GoogleAnalytics::getAllCampaign($value, $dementionLst, $matrixLst, $start_date, $end_date));
         }
 
         $s_spent = 0;

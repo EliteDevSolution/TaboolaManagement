@@ -44,9 +44,9 @@
                             @if($errors->has('view_id'))
                                 has-danger
                             @endif">
-                                <label class="col-sm-2 col-form-label">View ID</label>
+                                <label class="col-sm-2 col-form-label">View IDS</label>
                                 <div class="col-sm-10">
-                                    <input name="view_id" class="form-control" id="example-view_id-input" value="{{ old('view_id') }}" required>
+                                    <input name="view_id" class="form-control" id="tag-viewids" value="{{ old('view_id') }}" required>
                                     @if ($errors->has('view_id'))
                                         <div class="form-control-feedback" >{{ $errors->first('view_id') }}</div>
                                     @endif
@@ -134,9 +134,22 @@
         </div> <!-- end row -->
 
     </div><!-- container -->
-
-
 </div>
 
 @endsection
 
+@push('css')
+    <link href="{{ asset('assets/admin/css/tagify.css') }}" rel="stylesheet" type="text/css" />
+@endpush
+
+@push('scripts')
+    <!-- Jquery Tagify -->
+    <script src="{{ asset('assets/admin/js/jQuery.tagify.min.js') }}"></script>
+<script>
+    let viewids = $("#tag-viewids").tagify({
+        delimiters:",",
+        pattern:/\w+:./,
+        maxTags: Infinity
+    });
+</script>
+@endpush

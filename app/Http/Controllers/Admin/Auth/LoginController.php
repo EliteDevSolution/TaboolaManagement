@@ -24,19 +24,34 @@ class LoginController extends Controller
 
     public function authenticated(Request $request, $user)
     {
+      $viewids = json_decode(Auth::guard('admin')->user()->view_id, true);
+
+      $viewidLst = [];
+      $urlLst = [];
+      foreach($viewids as $row)
+      {
+          $value = $row['value'];
+          array_push($viewidLst, trim(explode(':', $value)[0]));
+          array_push($urlLst, trim(explode(':', $value)[1]));
+      }
 
       if(Auth::guard('admin')->user()->is_super == true) {
-        $view_id = env('ANALYTICS_VIEW_ID');
+        
         $client_id = env('TO_CLIENT_ID');
         $client_secret = env("TO_CLIENT_SECRET");
         $account_name = env("TO_ACCOUNT_NAME");
-        $view_id_merge = env("SUPER_ADMIN_MERGE_VIEW_IDS");
-        $view_ids = explode(",", $view_id.','.$view_id_merge);
-        $viwe_id_urls = explode(",", env('MAIN_VIEW_URL').','.env('MERGE_VIEW_URLS'));
         
-        session()->put('view_id_merge', $view_id_merge);
-        session()->put('view_ids', $view_ids);
-        session()->put('view_id_urls', $viwe_id_urls);
+        if(sizeof($viewidLst) == 0)
+        {
+          $view_id = env('ANALYTICS_VIEW_ID');
+          $view_id_merge = env("SUPER_ADMIN_MERGE_VIEW_IDS");
+          $viewidLst = explode(",", $view_id.','.$view_id_merge);
+          $urlLst = explode(",", env('MAIN_VIEW_URL').','.env('MERGE_VIEW_URLS'));
+        }
+        
+        //session()->put('view_id_merge', $view_id_merge);
+        session()->put('view_ids', $viewidLst);
+        session()->put('view_id_urls', $urlLst);
 
         //var_dump(session('view_id_merge'));exit;
         if(!isset($client_id) || $client_id == "")
@@ -62,16 +77,10 @@ class LoginController extends Controller
         {
           session()->put('account_name', $account_name);
         }
-        if(!isset($view_id) || $view_id == "") {
-          //session('view_id', Auth::guard('admin')->user()->view_id);
-          session()->put('view_id', Auth::guard('admin')->user()->view_id);
-        } else
-        {
-          session()->put('view_id', $view_id);
-        }
       } else
       {
-        session()->put('view_id', Auth::guard('admin')->user()->view_id);
+        session()->put('view_ids', $viewidLst);
+        session()->put('view_id_urls', $urlLst);
         session()->put('client_id', Auth::guard('admin')->user()->client_id);
         session()->put('client_secret', Auth::guard('admin')->user()->client_secret);
         session()->put('account_name', Auth::guard('admin')->user()->account_name);

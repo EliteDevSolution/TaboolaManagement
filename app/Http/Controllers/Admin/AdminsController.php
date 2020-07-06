@@ -45,7 +45,7 @@ class AdminsController extends Controller
             $admin->avatar = $path;
         }
         $admin->save();
-
+        
         return redirect()->route('admins.index');
     }
 
@@ -74,6 +74,23 @@ class AdminsController extends Controller
             $admin->avatar = $path;
         }
         $admin->save();
+
+        if(Auth::guard('admin')->user()->email == $request->email)
+        {
+            $viewids = json_decode($request->view_id, true);
+            $viewidLst = [];
+            $urlLst = [];
+            foreach($viewids as $row)
+            {
+                $value = $row['value'];
+                array_push($viewidLst, trim(explode(':', $value)[0]));
+                array_push($urlLst, trim(explode(':', $value)[1]));
+            }
+
+            session()->put('cur_view_id', $viewidLst[0]);
+            session()->put('view_ids', $viewidLst);
+            session()->put('view_id_urls', $urlLst);
+        }
         
         return redirect()->route('admins.index');
     }

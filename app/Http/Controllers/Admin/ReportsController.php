@@ -66,14 +66,8 @@ class ReportsController extends Controller
         $currency = $request->get('currency');
         $curviewid = $request->get('curviewid');
         session()->put("cur_view_id", $curviewid);
+        $viewid ="ga:".$curviewid;
 
-        if(Auth::guard('admin')->user()->is_super == true) {
-            $viewid ="ga:".$curviewid;
-        } else
-        {
-            $viewid ="ga:".session('view_id');
-        }
-        
         //date range keep session...///
         session()->put("rep_start_date", $start_date);
         session()->put("rep_end_date", $end_date);
@@ -85,7 +79,6 @@ class ReportsController extends Controller
         
 
         $currencyType = intval(session('currency_type'));
-
 
         if($currencyType == 0)  //Auto Method...
         {

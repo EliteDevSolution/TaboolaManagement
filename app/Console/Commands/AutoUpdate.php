@@ -43,7 +43,15 @@ class AutoUpdate extends Command
         //First get to init data for cron update.
         $run_date = date('Y-m-d');
         $calc_date = date('Y-m-d', strtotime("-1 days"));
-        $viewidLst = explode(",", env('ANALYTICS_VIEW_ID').",".env('SUPER_ADMIN_MERGE_VIEW_IDS'));
+        
+        $res_admins = DB::table('admins')->where('is_super', 1)->get();
+        $viewids = json_decode($res_admins[0]->view_id, true);
+        $viewidLst = [];
+        foreach($viewids as $row)
+        {
+            $value = $row['value'];
+            array_push($viewidLst, trim(explode(':', $value)[0]));
+        }
 
         $res = DB::table('cron_init')->where('date', $run_date)->get();
         
@@ -118,13 +126,24 @@ class AutoUpdate extends Command
             $spent = floatval($spent);
             $gSpent = $findVal[2]*$currencyRate;
             $rMax = $gSpent/$currencyRate*$currencyMaxRate;
+            $lMin = $gSpent - $spent;
+            $lMax = $gSpent/$currencyRate * $currencyMaxRate - $spent;
+
             if($spent == 0)
             {
-                $roiMin = $gSpent / 100;
+                $roiMin = $lMin / 100;
+                $roiMax = $lMax / 100;
             } else
             {
-                $roiMin = ($gSpent - $spent) / $spent  * 100;
+                $roiMin = $lMin / $spent  * 100;
+                $roiMax = $lMax / $spent * 100;
             }
+
+            if($cpc > 0 && $clicks > 0)
+                $cpc= $spent/$clicks;
+            //$actual_cpc = $cpc * 1000;
+            $bidActual = floatval($cpc);
+            $roiMin = round($roiMin, 0);
 
             if($roiMin == 0) continue;
 
@@ -141,64 +160,102 @@ class AutoUpdate extends Command
                     array_push($cmpBlockList, $sitetitle);
                 }
             }
-            if($clicks >= 10)    //Bid amount update condition
-            {
-                $bidValue = $bidMax / $cmpBidAmount;
-                // if($bidMax < 0.025) 
-                //     $bidValue = 0.025 / $cmpBidAmount;
-                $bidValue = round($bidValue, 2);
-                if($bidValue > 1.3) $bidValue = 1.3;
-                
-                //if($bidValue < 0.7) $bidValue = 0.7;
-                
-                $found = array_filter($cmpCstBoost, function($v,$k) use ($sitetitle){
-                    return $v['target'] == $sitetitle;
-                }, ARRAY_FILTER_USE_BOTH);
+            //Bid amount update condition
+            $bidValue = ($rMax - $spent) / $spent * 1.3 / $cmpBidAmount;
 
-                if(sizeof($found) == 0) 
-                {
-                    if(1 - $bidValue > 0.1)
-                    {
-                        $bidValue = 0.9;
-                    }
-                    if($cmpBidAmount * $bidValue < 0.025) 
-                    {
-                        $bidValue = 0.025 / $cmpBidAmount;
-                        $bidValue = round($bidValue, 2);
-                    }
-                    array_push($cmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => $bidValue]);
-                } else
-                {
-                    if(1 - $bidValue > 0.1)
-                    {
-                        $bidValue = $found[array_keys($found)[0]]["cpc_modification"] - 0.1;    
-                    }
-                    if($cmpBidAmount * $bidValue < 0.025) 
-                    {
-                        $bidValue = 0.025 / $cmpBidAmount;
-                        $bidValue = round($bidValue, 2);
-                    }
-                    if($bidValue < 0.7) $bidValue = 0.7;
-                    $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
-                }
-            } else if($roiMin > 0) {    //step by step control
-                
-                $found = array_filter($cmpCstBoost, function($v,$k) use ($sitetitle){
-                    return $v['target'] == $sitetitle;
-                }, ARRAY_FILTER_USE_BOTH); 
-                
-                if(sizeof($found) == 0)
-                {
-                    array_push($cmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => 1.1]);
-                } else
-                {
-                    $bidValue = $found[array_keys($found)[0]]["cpc_modification"] + 0.1;
-                    
-                    $bidValue = round($bidValue, 2);
-                    if($bidValue > 1.5) $bidValue = 1.5;
-                    $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
-                }
+            if($bidValue < 0 || $bidValue < 0.025)
+            {
+                $bidValue = 0.025 / $cmpBidAmount;
+            } else if($bidValue > 2)
+            {
+                $bidValue = 2; 
             }
+            
+            $bidValue = round($bidValue, 2);
+
+            $found = array_filter($cmpCstBoost, function($v,$k) use ($sitetitle){
+                        return $v['target'] == $sitetitle;
+                    }, ARRAY_FILTER_USE_BOTH);
+
+            if(sizeof($found) == 0) 
+            {
+                array_push($cmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => $bidValue]);
+            } else
+            {
+                $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
+            }
+
+            
+            // if($clicks >= 10)
+            // {
+            //     if($roiMax > 0)
+            //     {
+            //         $bidValue = $roiMax * $bidActual / 100 / $cmpBidAmount;
+            //         if($roiMax * $bidActual / 100 < 0.025)
+            //             $bidValue = 0.025 / $cmpBidAmount;
+            //     }
+            //     else
+            //     {
+            //         $bidValue = $roiMax * 60 / 100 / $cmpBidAmount;
+            //         if($roiMax * 60 / 100 < 0.025)
+            //             $bidValue = 0.025 / $cmpBidAmount;
+            //     }
+
+            //     // if($bidMax < 0.025)
+            //     //     $bidValue = 0.025 / $cmpBidAmount;
+            //     $bidValue = round($bidValue, 2);
+            //     if($bidValue > 1.3) $bidValue = 1.3;
+                
+            //     if($bidValue < 0.7) $bidValue = 0.7;
+                
+            //     $found = array_filter($cmpCstBoost, function($v,$k) use ($sitetitle){
+            //         return $v['target'] == $sitetitle;
+            //     }, ARRAY_FILTER_USE_BOTH);
+
+            //     if(sizeof($found) == 0) 
+            //     {
+            //         // if(1 - $bidValue > 0.1)
+            //         // {
+            //         //     $bidValue = 0.9;
+            //         // }
+            //         // if($cmpBidAmount * $bidValue < 0.025) 
+            //         // {
+            //         //     $bidValue = 0.025 / $cmpBidAmount;
+            //         //     $bidValue = round($bidValue, 2);
+            //         // }
+            //         array_push($cmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => $bidValue]);
+            //     } else
+            //     {
+            //         // if(1 - $bidValue > 0.1)
+            //         // {
+            //         //     $bidValue = $found[array_keys($found)[0]]["cpc_modification"] - 0.1;    
+            //         // }
+            //         // if($cmpBidAmount * $bidValue < 0.025) 
+            //         // {
+            //         //     $bidValue = 0.025 / $cmpBidAmount;
+            //         //     $bidValue = round($bidValue, 2);
+            //         // }
+            //         // if($bidValue < 0.7) $bidValue = 0.7;
+            //         $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
+            //     }
+            // } else if($roiMin > 0) {    //step by step control
+                
+            //     $found = array_filter($cmpCstBoost, function($v,$k) use ($sitetitle){
+            //         return $v['target'] == $sitetitle;
+            //     }, ARRAY_FILTER_USE_BOTH); 
+                
+            //     if(sizeof($found) == 0)
+            //     {
+            //         array_push($cmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => 1.1]);
+            //     } else
+            //     {
+            //         $bidValue = $found[array_keys($found)[0]]["cpc_modification"] + 0.1;
+                    
+            //         $bidValue = round($bidValue, 2);
+            //         if($bidValue > 1.5) $bidValue = 1.5;
+            //         $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
+            //     }
+            // }
         }
 
         // $sendVal =  [    

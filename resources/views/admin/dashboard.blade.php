@@ -12,7 +12,6 @@
                     <i class="fa fa-calendar"></i>&nbsp;
                     <span></span> <i class="fa fa-caret-down"></i>
                 </div>
-                @if(Auth::guard('admin')->user()->is_super == true) 
                 Viewids:
                 <select class="minimal" id="selviewids" class="m-b-12 col-md-3 list-inline" style="margin-top:-20px;border:none;background-color: #fafafa;color: #292b2c">
                     @foreach ($view_ids as $key => $val)
@@ -23,7 +22,6 @@
                         @endif
                     @endforeach
                 </select>
-                @endif
             </div>
 
             <div class="col-md-6 col-lg-6 col-xl-3">
@@ -294,6 +292,7 @@
     <link rel="stylesheet" href="{{ asset('assets/admin/plugins/datatables/responsive.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/plugins/jvectormap/jquery-jvectormap-2.0.2.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css"/>
+    <link href="{{ asset('assets/admin/plugins/toastr/toastr.min.css') }}" rel="stylesheet" type="text/css" />
     </style>
 @endpush
 
@@ -345,9 +344,11 @@
     <!-- Date Range Picker Js -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    
-    
-    <script>
+
+    <!-- Toastr Alert Js -->
+    <script src="{{ asset('assets/admin/plugins/toastr/toastr.min.js') }}"></script>
+  
+<script>
         $(function() {
 
             var start = new Date("{{ $rep_start_date }}".replace( /(\d{4})-(\d{2})-(\d{2})/, "$1/$2/$3"));

@@ -14,8 +14,9 @@
                             <tr>
                                 <th>Name</th>
                                 <th>E-mail</th>
-                                <th>View-id</th>
                                 <th>Taboola account name</th>
+                                <th>ClientId</th>
+                                <th>ClinetSecret</th>
                                 <th>Actions</th>
                             </tr>
                             </thead>
@@ -37,8 +38,9 @@
                                     </div>
                                 </td>
                                 <td>{{ $admin->email }}</td>
-                                <td>{{ $admin->view_id }}</td>
                                 <td>{{ $admin->account_name }}</td>
+                                <td>{{ $admin->client_id }}</td>
+                                <td>{{ $admin->client_secret }}</td>
                                 <td>
                                     <a href="{{ route('admins.edit',$admin->id) }}" title="Edit">
                                         <button class="btn-primary"><i class="mdi mdi-lead-pencil"></i></button>

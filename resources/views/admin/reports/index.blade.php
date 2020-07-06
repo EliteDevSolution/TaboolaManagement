@@ -21,7 +21,6 @@
                         <i class="fa fa-calendar"></i>&nbsp;
                         <span></span> <i class="fa fa-caret-down"></i>
                     </div>
-                    @if(Auth::guard('admin')->user()->is_super == true) 
                     <span class="ml-3"></span>
                     Viewids: 
                     <select class="minimal" id="selviewids" class="m-b-10 col-md-3 list-inline" style="border:none;background-color: #fafafa;color: #292b2c">
@@ -33,7 +32,6 @@
                             @endif
                         @endforeach
                     </select>
-                    @endif
             </div>
             
             <div class="col-12">
