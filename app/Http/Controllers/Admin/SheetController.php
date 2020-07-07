@@ -816,7 +816,7 @@ class SheetController extends Controller
 
                 //Bid amount update condition
                 
-                //if($value['roi_max'] > 60) continue;
+                if($value['roi_max'] > 30) continue;
                 
                 $bidValue = $value['bid_max'] / $value['default_bid'];
 
@@ -848,10 +848,40 @@ class SheetController extends Controller
 
                 if(sizeof($found) == 0)
                 {
+                    $curbidValue = 1;
+                    
+                    if($curbidValue * $value['default_bid'] > 0.05)
+                    {
+                        $bidValue = 0.5;
+                    } else
+                    {
+                        $bidValue = 0.8;
+                    }
+                    if($value['default_bid'] * $bidValue < 0.025)
+                    {
+                        $bidValue = 0.025 / $value['default_bid'];
+                    }
+                    $bidValue = round($bidValue, 2);
+
                     array_push($cmpCstBoost, [ "target" => $siteid, "cpc_modification" => $bidValue]);
                     $tmpCmpSiteData[$key]['r_boost'] = $bidValue;
                 } else
                 {
+                    $curbidValue = $value['r_boost'];
+                    
+                    if($curbidValue * $value['default_bid'] > 0.05)
+                    {
+                        $bidValue = 1 - 0.5;
+                    } else
+                    {
+                        $bidValue = 1 - 0.2;
+                    }
+                    if($value['default_bid'] * $bidValue < 0.025)
+                    {
+                        $bidValue = 0.025 / $value['default_bid'];
+                    }
+                    $bidValue = round($bidValue, 2);
+                    
                     $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
                     $tmpCmpSiteData[$key]['r_boost'] = $bidValue;
                 }

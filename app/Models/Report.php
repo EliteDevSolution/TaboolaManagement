@@ -209,6 +209,38 @@ class Report extends Model
         return $response;
     }
 
+    static function getTaboolaDays($start_date, $end_date)
+    {
+        $account_id = session('account_name');
+        $access_token = session('access_token');
+        $base_url =env('TO_API_BASE_URL');
+        $url = "$base_url/api/1.0/$account_id/reports/campaign-summary/dimensions/day?start_date=$start_date&end_date=$end_date";
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_SSL_VERIFYHOST => 0,
+        CURLOPT_SSL_VERIFYPEER => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "GET",
+        CURLOPT_HTTPHEADER => array(
+            "Authorization: Bearer $access_token"
+        ),
+        ));
+
+        $result = curl_exec($curl);
+
+        curl_close($curl);
+        $response = json_decode($result, true);
+        return $response;
+    }
+
     static function updateTaboolaCampaigns($id, $value)
     {
 

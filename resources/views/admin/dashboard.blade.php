@@ -421,8 +421,15 @@
                     endDate:endDate
                 },
                 success : function(res) {
+                    $('#datatable1').DataTable().destroy();
+                    $('#datatable1').DataTable({
+                        "scrollY": '60vh',
+                        "scrollCollapse": true,
+                        "order": [[ 1, "desc" ]],
+                        "searching": false, 
+                        "info": false
+                    });
                     
-
                     if(res.status === false)
                     {
                         $('#s_spend_total').text('R$ 0');
@@ -827,14 +834,7 @@
 
     // Start datatables.init.js
         $(document).ready(function() {
-            $('#datatable1').DataTable().destroy();
-            $('#datatable1').DataTable({
-                "scrollY": '60vh',
-                "scrollCollapse": true,
-                "order": [[ 1, "desc" ]],
-                "searching": false, 
-                "info": false
-            });
+            
         } );
         
     // End

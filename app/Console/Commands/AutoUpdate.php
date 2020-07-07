@@ -161,7 +161,7 @@ class AutoUpdate extends Command
                 }
             }
             //Bid amount update condition
-            if($roiMax > 60) continue;
+            if($roiMax > 30) continue;
 
             $bidValue = $bidMax / $cmpBidAmount;
 
@@ -191,11 +191,43 @@ class AutoUpdate extends Command
                         return $v['target'] == $sitetitle;
                     }, ARRAY_FILTER_USE_BOTH);
 
-            if(sizeof($found) == 0) 
+            if(sizeof($found) == 0)
             {
+                $curbidValue = 1;
+                if($roiMax < 0)
+                {
+                    if($curbidValue * $cmpBidAmount > 0.05)
+                    {
+                        $bidValue = 0.5;
+                    } else
+                    {
+                        $bidValue = 0.8;
+                    }
+                    if($cmpBidAmount * $bidValue < 0.025)
+                    {
+                        $bidValue = 0.025 / $cmpBidAmount;
+                    }
+                    $bidValue = round($bidValue, 2);
+                } 
                 array_push($cmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => $bidValue]);
             } else
             {
+                $curbidValue = $found[array_keys($found)[0]]["cpc_modification"];
+                if($roiMax < 0)
+                {
+                    if($curbidValue * $cmpBidAmount > 0.05)
+                    {
+                        $bidValue = 1 - 0.5;
+                    } else
+                    {
+                        $bidValue = 1 - 0.2;
+                    }
+                    if($cmpBidAmount * $bidValue < 0.025)
+                    {
+                        $bidValue = 0.025 / $cmpBidAmount;
+                    }
+                    $bidValue = round($bidValue, 2);
+                }
                 $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
             }
 

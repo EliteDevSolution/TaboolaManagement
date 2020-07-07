@@ -107,6 +107,79 @@ class DashboardController extends Controller
         return response()->json(['status'=>true]);
     }
 
+    public function getTotalValueTemp(Request $request)
+    {
+        $start_date = $request->get('startDate');
+        $end_date = $request->get('endDate');
+        session()->put("rep_start_date", $start_date);
+        session()->put("rep_end_date", $end_date);
+
+        $currencyType = intval(session('currency_type'));
+        $currency = "BRL";
+        if($currencyType == 0)  //Auto Method...
+        {
+            $currencyRate = Report::getCurrenciesRate($currency);
+            $currecyMaxRate = floatval(session('currency_max_'.$currency));
+            $braRate = session('currency_BRL');
+        } else                  //Manual Method...
+        {
+            $currencyRate = floatval(session('currency_m_'.$currency));
+            $currecyMaxRate = floatval(session('currency_m_max_'.$currency));
+            $braRate = session('currency_m_BRL');
+        }
+
+        $res = Report::getTaboolaDays($start_date, $end_date);
+
+        if(sizeof($res) == 0)
+            return response()->json(['status'=>false]);
+        
+        $dementionLst = ['ga:date'];
+        $matrixLst = ['ga:adsenseRevenue', 'ga:adsenseAdsClicks', 'ga:adsensePageImpressions', 'ga:adsenseCTR', 'ga:adsenseECPM'];
+        
+        $view_ids = session('view_ids');
+
+        $result = [];
+        
+        foreach ($view_ids as $key => $value) {
+            $result = array_merge($result, GoogleAnalytics::getAllCampaign($value, $dementionLst, $matrixLst, $start_date, $end_date));
+        }
+
+        $s_gSpent = 0;
+        $s_spent = 0;
+        $s_rMax = 0;
+        $s_lMax = 0;
+        $s_roiMax = 0;
+        
+        $count = 0;
+
+        foreach($result as $row)
+        {
+            $s_gSpent += $row[1]*$currencyRate;
+        }
+
+        foreach($res['results'] as $value)
+        {
+            $s_spent += $value['spent'];
+        }
+
+        $s_lMax = $s_gSpent/$currencyRate*$currecyMaxRate - $s_spent;
+
+        if($s_spent == 0)
+        {
+            $s_roiMax = number_format(round($s_lMax / 1 * 100, 2), 2, '.', ',');
+        }
+        else                
+        {
+            $s_roiMax = number_format(round($s_lMax / $s_spent * 100, 2), 2, '.', ',');
+        }
+
+        $s_rMax = $s_gSpent/$currencyRate*$currecyMaxRate;
+        $s_spent = number_format(round($s_spent, 2), 2, '.', ',');
+        $s_rMax = number_format(round($s_rMax, 2), 2, '.', ',');
+        $s_lMax = number_format(round($s_lMax, 2), 2, '.', ',');
+        return response()->json(['status'=>true, 's_spent' => $s_spent, 's_rmax' => $s_rMax, 's_lmax' => $s_lMax, 's_roimax' => $s_roiMax]);
+    }
+    
     public function getTotalValue(Request $request)
     {
         $start_date = $request->get('startDate');
@@ -138,7 +211,7 @@ class DashboardController extends Controller
         $matrixLst = ['ga:adsenseRevenue', 'ga:adsenseAdsClicks', 'ga:adsensePageImpressions', 'ga:adsenseCTR', 'ga:adsenseECPM'];
         
         $view_ids = session('view_ids');
-        
+
         $result = [];
         foreach ($view_ids as $key => $value) {
             $result = array_merge($result, GoogleAnalytics::getAllCampaign($value, $dementionLst, $matrixLst, $start_date, $end_date));
