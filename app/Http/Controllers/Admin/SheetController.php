@@ -815,9 +815,12 @@ class SheetController extends Controller
                 } 
 
                 //Bid amount update condition
-                $bidValue = ($value['receive_max'] - $value['spent']) / $value['spent'] * 1.3 / $value['default_bid'];
+                
+                //if($value['roi_max'] > 60) continue;
+                
+                $bidValue = $value['bid_max'] / $value['default_bid'];
 
-                if($bidValue < 0 || $bidValue < 0.025)
+                if($value['bid_max'] < 0.025)
                 {
                     $bidValue = 0.025 / $value['default_bid'];
                 } else if($bidValue > 2)
@@ -825,6 +828,18 @@ class SheetController extends Controller
                     $bidValue = 2; 
                 }
                 
+                if($value['clicks'] < 10)
+                {
+                    if($value['roi_max'] < 0)
+                    {
+                        $bidValue = 0.025 / $value['default_bid'];
+                    } else
+                    {
+                        if($bidValue > 1.2) $bidValue = 1.2;
+                        if($value['bid_max'] < 0.025) $bidValue = 0.025 / $value['default_bid'];
+                    }
+                }
+
                 $bidValue = round($bidValue, 2);
 
                 $found = array_filter($cmpCstBoost, function($v,$k) use ($siteid){

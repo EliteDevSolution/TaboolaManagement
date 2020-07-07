@@ -161,9 +161,11 @@ class AutoUpdate extends Command
                 }
             }
             //Bid amount update condition
-            $bidValue = ($rMax - $spent) / $spent * 1.3 / $cmpBidAmount;
+            if($roiMax > 60) continue;
 
-            if($bidValue < 0 || $bidValue < 0.025)
+            $bidValue = $bidMax / $cmpBidAmount;
+
+            if($bidMax < 0.025)
             {
                 $bidValue = 0.025 / $cmpBidAmount;
             } else if($bidValue > 2)
@@ -171,6 +173,18 @@ class AutoUpdate extends Command
                 $bidValue = 2; 
             }
             
+            if($clicks < 10)
+            {
+                if($roiMax < 0)
+                {
+                    $bidValue = 0.025 / $cmpBidAmount;
+                } else
+                {
+                    if($bidValue > 1.2) $bidValue = 1.2;
+                    if($bidMax < 0.025) $bidValue = 0.025 / $cmpBidAmount;
+                }
+            }
+
             $bidValue = round($bidValue, 2);
 
             $found = array_filter($cmpCstBoost, function($v,$k) use ($sitetitle){
