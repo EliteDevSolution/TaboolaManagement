@@ -14,6 +14,11 @@
                 </div>
                 Viewids:
                 <select class="minimal" id="selviewids" class="m-b-12 col-md-3 list-inline" style="margin-top:-20px;border:none;background-color: #fafafa;color: #292b2c">
+                    @if($cur_view_id == "0")    
+                        <option value="0" selected> All View Ids</option>
+                    @else
+                        <option value="0"> All View Ids</option>
+                    @endif
                     @foreach ($view_ids as $key => $val)
                         @if($val == $cur_view_id)
                             <option value="{{ $val }}" selected>{{ $val }} ( {{ 'https://'.$view_id_urls[$key] }} )</option>
@@ -28,7 +33,7 @@
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-currency-usd"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_spend_total">R$ 0</span>
+                        <span class="counter" id="s_spend_total">R$ {{ $sum_spent }}</span>
                         Total Spends
                     </div>
                 </div>
@@ -37,7 +42,7 @@
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-cart-outline"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_rmax_total">R$ 0</span>
+                        <span class="counter" id="s_rmax_total">R$ {{ $sum_benefit }}</span>
                         Total Received Max
                     </div>
                 </div>
@@ -46,7 +51,7 @@
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-scale-balance"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_profit_total">R$ 0</span>
+                        <span class="counter" id="s_profit_total">R$ {{ $sum_profit }}</span>
                         Total Profit Max
                     </div>
                 </div>
@@ -55,229 +60,67 @@
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-cube-outline"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_roimax_total">0 %</span>
+                        <span class="counter" id="s_roimax_total">{{ $sum_roi }} %</span>
                         ROI Max
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-xl-6">
-                <div class="card m-b-20">
-                    <div class="card-block">
-                        <!-- Nav tabs -->
+        <div class="btm-tbl">
+            <div class="card m-b-20">
+                <div class="card-block">
+                    <!-- Nav tabs -->
                         <ul class="nav nav-tabs" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" data-toggle="tab" href="#tab-users" role="tab">Users</a>
+                                <a class="nav-link active" data-toggle="tab" href="#tab-received-spend" role="tab">Received & Spend</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#tab-sessions" role="tab">Sessions</a>
+                                <a class="nav-link" data-toggle="tab" href="#tab-roi" role="tab">ROI</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#tab-bouncerate" role="tab">Bounce Rate</a>
+                                <a class="nav-link" data-toggle="tab" href="#tab-profit" role="tab">Profit</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#tab-sessionduration" role="tab">Session Duration</a>
+                                <a class="nav-link" data-toggle="tab" href="#tab-all-analysis" role="tab">All(Received, Spend, ROI, Profit)</a>
                             </li>
                         </ul>
 
                         <!-- Tab panes -->
                         <div class="tab-content">
-                            <div class="tab-pane active p-3" id="tab-users" role="tabpanel">
-                                <canvas id="line-chart1" width="800" height="450"></canvas>
+                            <div class="tab-pane active p-3" id="tab-received-spend" role="tabpanel">
+                                <canvas id="chart-received-spend" height="120"></canvas>
                             </div>
-                            <div class="tab-pane p-3" id="tab-sessions" role="tabpanel">
-                                <canvas id="line-chart2" width="800" height="450"></canvas>
+                            <div class="tab-pane p-3" id="tab-roi" role="tabpanel">
+                                <canvas id="chart-roi" height="120"></canvas>
                             </div>
-                            <div class="tab-pane p-3" id="tab-bouncerate" role="tabpanel">
-                                <canvas id="line-chart3" width="800" height="450"></canvas>
+                            <div class="tab-pane p-3" id="tab-profit" role="tabpanel">
+                                <canvas id="chart-profit" height="120"></canvas>
                             </div>
-                            <div class="tab-pane p-3" id="tab-sessionduration" role="tabpanel">
-                                <canvas id="line-chart4" width="800" height="450"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3">
-                <div class="card m-b-20" style="background-color: #67a8e4; color: #fff; height: 431.5px;">
-                    <div class="card-block">
-                        <h4 class="mt-0 header-title">Active Users right now</h4>
-                        <h1>{{ $activeusers }}</h1>
-                        <div class="row">
-                            <div class="col-md-9">
-                                <p style="font-size: 12px;">Top Active Pages</p>
-                                @if( $activepages !=null )
-                                    @foreach($activepages as $page)
-                                        @if( strlen($page[0])>35 )
-                                            <p style="margin: 0;white-space: nowrap;">{{ substr($page[0],0,15) }}...{{substr($page[0],-10)}}</p>
-                                        @else
-                                            <p style="margin: 0;white-space: nowrap;">{{ $page[0] }}</p>
-                                        @endif 
-                                    @endforeach
-                                    @php
-                                        reset($activepages);
-                                    @endphp
-                                @endif
-                            </div>
-                            <div class="col-md-3">
-                                <p style="font-size: 12px; text-align: right;">Active Users</p>
-                                @if( $activepages !=null )
-                                    @foreach($activepages as $page)
-                                    <p style="text-align: right; margin: 0;">{{ $page[1] }}</p>
-                                    @endforeach
-                                @endif
+                            <div class="tab-pane p-3" id="tab-all-analysis" role="tabpanel">
+                                <canvas id="chart-all-analysis" height="120"></canvas>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3">
-                <div class="card m-b-20" style="">
-                    <div class="card-block">
-                        <h4 class="mt-0 header-title">More users returned to your site in 
-                        <?php
-                            array_pop($return_users);
-                            $users_latestMonth = $return_users[sizeof($return_users)-1][1];
-                            $newUser_latestMonth = $return_users[sizeof($return_users)-1][2];
-                            $letter_latestMonth = date('F', mktime(0, 0, 0, $return_users[sizeof($return_users)-1][0], 10));
-                            $divValue = 1;
-                            if($users_latestMonth > 0) $divValue = $users_latestMonth;
-                            $return_users_latestMonth = round( ( $users_latestMonth - $newUser_latestMonth ) / $divValue * 100 ,2 );
-                            echo $letter_latestMonth.".";
-                        ?>
-                        </h4>
-                        <p style="font-size: 14px;">You had {{ $users_latestMonth }} users, {{ $users_latestMonth - $newUser_latestMonth }} came back in {{ $letter_latestMonth }}, which means {{ $return_users_latestMonth }}% of your users returned to your site.</p>
-                        <div><canvas id="bar" height="300"></canvas></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-9">
-                <div class="card m-b-20">
-                    <div class="card-block">
-                        <p class="text-muted m-b-30 font-14">Sessions by country</p>
-                        <div class="row">
-                            <div class="col-md-7">
-                                <div id="world-map-users" style="height: 400px;"></div>
-                            </div>
-                            <div class="col-md-5" style="display: flex; align-items: center;">
-                                <canvas id="bar-chart-horizontal" height="200"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3">
-                <div class="card m-b-20">
-                    <div class="card-block">
-                        <p class="text-muted m-b-30 font-14">What are your top devices ?</p>
-                        <div id="morris-donut-example" style="height: 300px"></div>
-                        <ul class="list-inline widget-chart m-t-20 text-center">
-                            <li>
-                                <i class="mdi mdi-desktop-mac"></i>
-                                <p class="text-muted m-b-0">Desktop</p>
-                                <h4 class=""><b>{{ round( $topdevices[0][1] / ( $topdevices[0][1] + $topdevices[1][1] + $topdevices[2][1] ) * 100, 1 ) }}%</b></h4>
-                            </li>
-                            <li>
-                                <i class="mdi mdi-cellphone-iphone"></i>
-                                <p class="text-muted m-b-0">Mobile</p>
-                                <h4 class=""><b>{{ round( $topdevices[1][1] / ( $topdevices[0][1] + $topdevices[1][1] + $topdevices[2][1] ) * 100, 1 ) }}%</b></h4>
-                            </li>
-                            <li>
-                                <i class="mdi mdi-tablet"></i>
-                                <p class="text-muted m-b-0">Tablet</p>
-                                <h4 class=""><b>{{ round( $topdevices[2][1] / ( $topdevices[0][1] + $topdevices[1][1] + $topdevices[2][1] ) * 100, 1 ) }}%</b></h4>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        
-            <div class="col-xl-12 btm-tbl">
-                <div class="card m-b-20">
-                    <div class="card-block">
-                        <h4 class="mt-0 m-b-15 header-title">All Campaign Analysis</h4>
-                        <table id="datatable1" class="table table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Campaign</th>
-                                    <th>Users</th>
-                                    <th>New Users</th>
-                                    <th>Sessions</th>
-                                    <th>Bounce Rate</th>
-                                    <th>Pages/Session</th>
-                                    <th>Avg. Session Duration</th>
-                                    <th>Goal Conversion Rate</th>
-                                    <th>Goal Completions</th>
-                                    <th>Goal Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $tUsers = 0;
-                                $tnewUsers = 0;
-                                $tSessions = 0;
-                                $tBouncerate = 0;
-                                $tpageSession = 0;
-                                $tavgSessionDuration = 0;
-                                $tgoalConversion = 0;
-                                $tgoalCompletion = 0;
-                                $tGoalVal = 0;
-                                $tTotal = 0;
-                                    
-                                foreach ($all_campaigns as $key => $row)
-                                {
-                                    
-                                    //Total Processing...
-                                    $tTotal ++;
-                                    $tUsers += $row[1];
-                                    $tnewUsers += $row[2];
-                                    $tSessions += $row[3];
-                                    $tBouncerate += $row[4];
-                                    $tpageSession += $row[5];
-                                    $tavgSessionDuration += $row[6];
-                                    $tgoalConversion += $row[7];
-                                    $tgoalCompletion += $row[8];
-                                    $tGoalVal += $row[9];
-                                    ?>
-                                    <tr>
-                                        <th><?=$row[0]?> </th>
-                                        <td><?=number_format($row[1], 0, '.', ',')?></td>
-                                        <td><?=number_format($row[2], 0, '.', ',')?></td>
-                                        <td><?=number_format($row[3], 0, '.', ',')?></td>
-                                        <td><?=number_format($row[4], 2, '.', '')?>%</td>
-                                        <td><?=number_format($row[5], 2, '.', '')?></td>
-                                        <td><?=gmdate("H:i:s", $row[6])?></td>
-                                        <td><?=number_format($row[7], 2, '.', '')?>%</td>
-                                        <td><?=$row[8]?></td>
-                                        <td>R$<?=number_format($row[9], 2, '.', ',')?></td>
-                                    </tr>
-                                <?php } ?>
-                            </tbody>
-                            <tfoot>
-                                  <tr>
-                                    <th> Total </th>
-                                    <th>{{ number_format($tUsers, 0, '.', ',') }}</th>
-                                    <th>{{ number_format($tnewUsers, 0, '.', ',') }}</th>
-                                    <th>{{ number_format($tSessions, 0, '.', ',') }}</th>
-                                    <th>{{ number_format($tBouncerate/$tTotal, 2, '.', '') }}%</th>
-                                    <th>{{ number_format($tpageSession/$tTotal, 2, '.', '') }}</th>
-                                    <th>{{ gmdate("H:i:s", $tavgSessionDuration/$tTotal) }}</th>
-                                    <th>{{ number_format($tgoalConversion/$tTotal, 2, '.', '') }}%</th>
-                                    <th>{{ number_format($tgoalCompletion, 0, '.', ',') }}</th>
-                                    <th>R${{ number_format($tGoalVal, 2, '.', ',') }}</th>
-                                </tr>
-                            </tfoot>
-                        </table>
                     </div>
                 </div>
             </div>
         </div>
+
+        {{--  <div class="container">
+            <div class="card m-b-20">
+                <div class="card-block">
+                    <h4 class="mt-0 m-b-15 header-title">All Analysis Collection</h4>
+                    <table id="datatable1" class="table table-bordered table-hover">
+                        <thead>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                        <tfoot>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>  --}}
     </div>
 
 </div>
@@ -355,6 +198,7 @@
             start = moment(start);
             var end = new Date("{{ $rep_end_date }}".replace( /(\d{4})-(\d{2})-(\d{2})/, "$1/$2/$3"));
             end = moment(end);
+            $('#dashdate span').html(start.format('MMMM D, YYYY') + '~' + end.format('MMMM D, YYYY'));
 
             function cb(cstart, cend) {
                $('#dashdate span').html(cstart.format('MMMM D, YYYY') + '~' + cend.format('MMMM D, YYYY'));
@@ -364,7 +208,25 @@
                 end_date = cend.format('YYYY-MM-DD');
                 start = cstart;
                 end = cend;
-                getTotalValues(start_date, end_date);
+                let cur_view_id = $('#selviewids').val();
+                $.ajax({
+                    url: "{{ route('dashboard.changedate') }}",
+                    type : "POST",
+                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                    data : {
+                        startDate:start_date,
+                        endDate:end_date   
+                    },
+                    success : function(res) {
+                        location.href = "{{ route('dashboard') }}";
+                    },
+                    error: function (request, status, error) {
+                        toastr.error("Data loading error!", "Error");
+                        $.unblockUI();
+                    }
+                });   
+
+                //getTotalValues(start_date, end_date);
             }
 
             $('#dashdate').daterangepicker({
@@ -388,13 +250,14 @@
             {
                 let cur_view_id = $('#selviewids').val();
                 $.ajax({
-                    url: "{{ route('dashboard.changeviewid') }}",
+                    url: "{{ route('dashboard.changeallviewid') }}",
                     type : "POST",
                     headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
                     data : {
-                        cur_view_id: cur_view_id
+                        cur_all_view_id: cur_view_id
                     },
                     success : function(res) {
+                        console.log(res);
                         location.href = "{{ route('dashboard') }}";
                     },
                     error: function (request, status, error) {
@@ -403,9 +266,6 @@
                     }
                 });   
             });
-
-            cb(start, end);
-
         });
 
         function getTotalValues(startDate, endDate)
@@ -421,14 +281,14 @@
                     endDate:endDate
                 },
                 success : function(res) {
-                    $('#datatable1').DataTable().destroy();
-                    $('#datatable1').DataTable({
-                        "scrollY": '60vh',
-                        "scrollCollapse": true,
-                        "order": [[ 1, "desc" ]],
-                        "searching": false, 
-                        "info": false
-                    });
+                    //$('#datatable1').DataTable().destroy();
+                    //$('#datatable1').DataTable({
+                    //    "scrollY": '60vh',
+                    //    "scrollCollapse": true,
+                    //    "order": [[ 1, "desc" ]],
+                    //    "searching": false, 
+                    //    "info": false
+                    //});
                     
                     if(res.status === false)
                     {
@@ -451,386 +311,204 @@
                 }
             });
         }
-        
-        
     
-    // Start flot.init.js
-        new Chart(document.getElementById("line-chart1"), {
+        // Analysis  Chart
+        new Chart(document.getElementById("chart-received-spend"), {
             type: 'line',
             data: {
                 labels: [
                     <?php
-                    foreach ($ana_users as $row){
-                        echo "\"".date("M d",strtotime($row[0]))."\",";
+                    foreach ($g_benefit as $key => $row){
+                        if(session('rep_start_date') == session('rep_end_date'))
+                            echo "\"".$key."h"."\",";
+                        else
+                        echo "\"".$key."\",";
                     }
-                    reset($ana_users);
+                    reset($g_benefit);
                     ?>
                 ],
-                datasets: [{ 
-                    data: [ 
-                        <?php
-                            foreach ($ana_users as $row){
-                                echo $row[2].",";
-                            }
-                        ?>
-                    ],
-                    label: "Users",
-                    borderColor: "#3e95cd",
-                    fill: false
-                }
-                ]
-            },
-            options: {
-                title: {
-                display: true,
-                }
-            }
-        });
-
-        new Chart(document.getElementById("line-chart2"), {
-            type: 'line',
-            data: {
-                labels: [
-                    <?php
-                    reset($ana_users);
-                    foreach ($ana_users as $row){
-                        echo "\"".date("M d",strtotime($row[0]))."\",";
-                    }
-                    reset($ana_users);
-                    ?>
-                ],
-                datasets: [{ 
-                    data: [ 
-                        <?php
-                            foreach ($ana_users as $row){
-                                echo $row[3].",";
-                            }
-                        ?>
-                    ],
-                    label: "Sessions",
-                    borderColor: "#3e95cd",
-                    fill: false
-                }
-                ]
-            },
-            options: {
-                title: {
-                display: true,
-                }
-            }
-        });
-
-        new Chart(document.getElementById("line-chart3"), {
-            type: 'line',
-            data: {
-                labels: [
-                    <?php
-                    reset($ana_users);
-                    foreach ($ana_users as $row){
-                        echo "\"".date("M d",strtotime($row[0]))."\",";
-                    }
-                    reset($ana_users);
-                    ?>
-                ],
-                datasets: [{ 
-                    data: [ 
-                        <?php
-                            foreach ($ana_users as $row){
-                                echo round($row[4],2).",";
-                            }
-                        ?>
-                    ],
-                    label: "Bounce Rate(%)",
-                    borderColor: "#3e95cd",
-                    fill: false
-                }
-                ]
-            },
-            options: {
-                title: {
-                display: true,
-                }
-            }
-        });
-
-        new Chart(document.getElementById("line-chart4"), {
-            type: 'line',
-            data: {
-                labels: [
-                    <?php
-                    reset($ana_users);
-                    foreach ($ana_users as $row){
-                        echo "\"".date("M d",strtotime($row[0]))."\",";
-                    }
-                    reset($ana_users);
-                    ?>
-                ],
-                datasets: [{ 
-                    data: [ 
-                        <?php
-                            foreach ($ana_users as $row){
-                                echo round($row[5]).",";
-                            }
-                        ?>
-                    ],
-                    label: "Session Duration(Second)",
-                    borderColor: "#3e95cd",
-                    fill: false
-                }
-                ]
-            },
-            options: {
-                title: {
-                display: true,
-                }
-            }
-        });
-
-
-    // End
-
-    // Start chartjs.init.js
-        !function($) {
-            "use strict";
-
-            var ChartJs = function() {};
-
-            ChartJs.prototype.respChart = function(selector,type,data, options) {
-                // get selector by context
-                var ctx = selector.get(0).getContext("2d");
-                // pointing parent container to make chart js inherit its width
-                var container = $(selector).parent();
-
-                // enable resizing matter
-                $(window).resize( generateChart );
-
-                // this function produce the responsive Chart JS
-                function generateChart(){
-                    // make chart width fit with its container
-                    var ww = selector.attr('width', $(container).width() );
-                    switch(type){
-                        case 'Line':
-                            new Chart(ctx, {type: 'line', data: data, options: options});
-                            break;
-                        case 'Doughnut':
-                            new Chart(ctx, {type: 'doughnut', data: data, options: options});
-                            break;
-                        case 'Pie':
-                            new Chart(ctx, {type: 'pie', data: data, options: options});
-                            break;
-                        case 'Bar':
-                            new Chart(ctx, {type: 'bar', data: data, options: options});
-                            break;
-                        case 'Radar':
-                            new Chart(ctx, {type: 'radar', data: data, options: options});
-                            break;
-                        case 'PolarArea':
-                            new Chart(ctx, {data: data, type: 'polarArea', options: options});
-                            break;
-                    }
-                    // Initiate new chart or Redraw
-
-                };
-                // run function - render chart at first load
-                generateChart();
-            },
-            //init
-            ChartJs.prototype.init = function() {
-                //barchart
-                var barChart = {
-                    labels: [
-                        <?php
-                            reset($return_users);
-                            foreach($return_users as $key=>$row){
-                                echo "\"".substr(date('F', mktime(0, 0, 0, $row[0], 10)),0,3)."\",";
-                            }
-                            reset($return_users);
-                        ?>
-                        ],
-                    datasets: [
-                        {
-                            label: "returning users(%)",
-                            backgroundColor: "#67a8e4",
-                            borderColor: "#67a8e4",
-                            borderWidth: 1,
-                            hoverBackgroundColor: "#67a8e4",
-                            hoverBorderColor: "#67a8e4",
-                            data: [
+                datasets: [
+                    { 
+                        data: [ 
                             <?php
-                                foreach($return_users as $key=>$row){
-                                    $val = round(($row[1] - $row[2]) / $row[1] * 100,2);
-                                    echo $val.",";
+                                foreach ($g_benefit as $row){
+                                    echo $row.",";
                                 }
                             ?>
-                            ]
-                        }
-                    ]
-                };
-                this.respChart($("#bar"),'Bar',barChart);
-                
-            },
-            $.ChartJs = new ChartJs, $.ChartJs.Constructor = ChartJs
-
-        }(window.jQuery),
-
-        //initializing
-        function($) {
-            "use strict";
-            $.ChartJs.init()
-        }(window.jQuery);
-    // End
-
-    // Start jvectormap.init.js
-        !function($) {
-            "use strict";
-
-            var VectorMap = function() {};
-
-            VectorMap.prototype.init = function() {
-                //various examples
-                var country_info = {
-                    <?php
-                        foreach($users_country as $key=>$row){
-                            echo $row[1].":".$row[2].",";
-                        }
-                    ?>
-                };
-
-                $('#world-map-users').vectorMap({
-                    map : 'world_mill_en',
-                    scaleColors : ['#03a9f4', '#03a9f4'],
-                    normalizeFunction : 'polynomial',
-                    hoverOpacity : 0.7,
-                    hoverColor : false,
-                    regionStyle : {
-                        initial : {
-                            fill : '#c9cfd4'
-                        }
+                        ],
+                        label: "Received(R$)",
+                        borderColor: "#FFF200",
+                        fill: false,
                     },
-                    markerStyle: {
-                        initial: {
-                            r: 9,
-                            'fill': '#03a9f4',
-                            'fill-opacity': 0.9,
-                            'stroke': '#fff',
-                            'stroke-width' : 7,
-                            'stroke-opacity': 0.4
-                        },
-
-                        hover: {
-                            'stroke': '#fff',
-                            'fill-opacity': 1,
-                            'stroke-width': 1.5
-                        }
-                    },
-                    series: {
-                        regions: [{
-                            values: country_info,
-                            scale: ['#C8EEFF', '#0071A4'],
-                            normalizeFunction: 'polynomial'
-                        }]
-                    },
-                    onRegionTipShow: function(e, el, code){
-                        let sessionCnt = country_info[code];
-                        if(typeof sessionCnt === 'undefined') sessionCnt = 0;
-                        el.html(el.html()+ "&nbsp;<img src=\"assets/admin/images/flag/" + code.toString().toLowerCase() + ".png\" style='width: 20px; height: 14px;'/> " + " (Sessions: " + sessionCnt + ")");
-                    },
-                        
-                    backgroundColor : 'transparent',
-                });
-
-            },
-            //init
-            $.VectorMap = new VectorMap, $.VectorMap.Constructor = VectorMap
-        }(window.jQuery),
-
-        //initializing 
-        function($) {
-            "use strict";
-            $.VectorMap.init()
-        }(window.jQuery);
-    // End
-
-    // Start morris.init.js
-        !function ($) {
-            "use strict";
-
-            var Dashboard = function () {
-            };
-
-            //creates Donut chart
-            Dashboard.prototype.createDonutChart = function (element, data, colors) {
-                Morris.Donut({
-                    element: element,
-                    data: data,
-                    resize: true,
-                    colors: colors,
-                });
-            },
-
-            Dashboard.prototype.init = function () {
-                //creating donut chart
-                var $donutData = [
-                    {label: "Tablet", value: <?php echo $topdevices[2][1]; ?> },
-                    {label: "Mobile", value: <?php echo $topdevices[1][1]; ?> },
-                    {label: "Desktop", value: <?php echo $topdevices[0][1]; ?> }
-                ];
-                this.createDonutChart('morris-donut-example', $donutData, ['#f0f1f4', '#67a8e4', '#337ab7']);
-
-            },
-            //init
-            $.Dashboard = new Dashboard, $.Dashboard.Constructor = Dashboard
-        }(window.jQuery),
-
-        //initializing
-        function ($) {
-            "use strict";
-            $.Dashboard.init();
-        }(window.jQuery);
-    // End
-
-    // Start chartist.init.js
-        new Chart(document.getElementById("bar-chart-horizontal"), {
-            type: 'horizontalBar',
-            data: {
-            labels: [
-                <?php
-                    $i = 0;
-                    reset($users_country);
-                    foreach($users_country as $key=>$row){
-                        echo "\"".$row[0]."\",";
-                        $i++;
-                        if($i>5) break;
+                    { 
+                        data: [ 
+                            <?php
+                                foreach ($t_spent as $row){
+                                    echo $row.",";
+                                }
+                            ?>
+                        ],
+                        label: "Spent(R$)",
+                        borderColor: "#000000",
+                        fill: false,
                     }
-                ?>
-                ],
-            datasets: [
-                {
-                label: "Sessions",
-                backgroundColor: "#67a8e4",
-                data: [
-                <?php
-                    $i = 0;
-                    reset($users_country);
-                    foreach($users_country as $key=>$row){
-                        echo $row[2].",";
-                        $i++;
-                        if($i>5) break;
-                    }
-                ?> 
                 ]
-                }
-            ]
             },
             options: {
-            legend: { display: false },
-            title: {
-                display: true,
-            }
+                title: {
+                    display: true,
+                },
+                responsive: true,
             }
         });
 
-    // End
+
+        new Chart(document.getElementById("chart-roi"), {
+            type: 'line',
+            data: {
+                labels: [
+                    <?php
+                    foreach ($roi as $key => $row){
+                        if(session('rep_start_date') == session('rep_end_date'))
+                            echo "\"".$key."h"."\",";
+                        else
+                        echo "\"".$key."\",";
+                    }
+                    reset($roi);
+                    ?>
+                ],
+                datasets: [
+                    { 
+                        data: [ 
+                            <?php
+                                foreach ($roi as $row){
+                                    echo $row.",";
+                                }
+                            ?>
+                        ],
+                        label: "Roi(%)",
+                        borderColor: "red",
+                        fill: false,
+                    }
+                ]
+            },
+            options: {
+                title: {
+                    display: true,
+                },
+                responsive: true,
+            }
+        });
+
+        new Chart(document.getElementById("chart-profit"), {
+            type: 'line',
+            data: {
+                labels: [
+                    <?php
+                    foreach ($profit as $key => $row){
+                        if(session('rep_start_date') == session('rep_end_date'))
+                            echo "\"".$key."h"."\",";
+                        else
+                        echo "\"".$key."\",";
+                    }
+                    reset($profit);
+                    ?>
+                ],
+                datasets: [
+                    { 
+                        data: [ 
+                            <?php
+                                foreach ($profit as $row){
+                                    echo $row.",";
+                                }
+                            ?>
+                        ],
+                        label: "Profit(R$)",
+                        borderColor: "#7F7F7F",
+                        fill: false,
+                    }
+                ]
+            },
+            options: {
+                title: {
+                    display: true,
+                },
+                responsive: true,
+            }
+        });
+
+        new Chart(document.getElementById("chart-all-analysis"), {
+            type: 'line',
+            data: {
+                labels: [
+                    <?php
+                    foreach ($g_benefit as $key => $row){
+                        if(session('rep_start_date') == session('rep_end_date'))
+                            echo "\"".$key."h"."\",";
+                        else
+                        echo "\"".$key."\",";
+                    }
+                    reset($g_benefit);
+                    ?>
+                ],
+                datasets: [
+                    { 
+                        data: [ 
+                            <?php
+                                foreach ($g_benefit as $row){
+                                    echo $row.",";
+                                }
+                            ?>
+                        ],
+                        label: "Received(R$)",
+                        borderColor: "#FFF200",
+                        fill: false,
+                    },
+                    { 
+                        data: [
+                            <?php
+                                foreach ($t_spent as $row){
+                                    echo $row.",";
+                                }
+                            ?>
+                        ],
+                        label: "Spent(R$)",
+                        borderColor: "#000000",
+                        fill: false,
+                    },
+                    { 
+                        data: [ 
+                            <?php
+                                foreach ($roi as $row){
+                                    echo $row.",";
+                                }
+                            ?>
+                        ],
+                        label: "Roi(%)",
+                        borderColor: "red",
+                        fill: false,
+                    },
+                    { 
+                        data: [ 
+                            <?php
+                                foreach ($profit as $row){
+                                    echo $row.",";
+                                }
+                            ?>
+                        ],
+                        label: "Profit(R$)",
+                        borderColor: "#7F7F7F",
+                        fill: false,
+                    }
+                ]
+            },
+            options: {
+                title: {
+                    display: true,
+                },
+                responsive: true,
+            }
+        });
 
     // Start datatables.init.js
         $(document).ready(function() {

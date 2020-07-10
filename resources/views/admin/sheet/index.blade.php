@@ -23,7 +23,6 @@
                         <i class="fa fa-calendar"></i>&nbsp;
                         <span></span> <i class="fa fa-caret-down"></i>
                     </div>    
-                    
             </div>
             
             <div class="col-12">
@@ -36,7 +35,6 @@
                             <select class="minimal m-b-10 col-md-4" id="selcampaigns">
                             </select>
                         </div>
-                        
                         <table id="datatable_sheet_data" class="table table-bordered table-hover">
                             <thead>
                                 <tr>
@@ -937,6 +935,11 @@
                       $('a#' + site_id).attr('boost', inc_boost_pro - 100);
                       $('a#' + site_id).text(`${currencyStr} ${cur_boost_val}(${inc_boost_pro - 100}%)`);
                 }
+                if(parseFloat(cur_boost_val) > parseFloat(boost_limit))
+                {
+                    $('#btn_dec_' + site_id).removeAttr('disabled');
+                    $('#btn_dec_' + site_id).attr('onclick', "bidDecrease(this)");
+                }
             });
 
         }
@@ -1108,6 +1111,7 @@
                 if(parseFloat(boost_val) > parseFloat(boost_limit))
                 {
                     $('#btn_dec_' + site_id).removeAttr('disabled');
+                    $('#btn_dec_' + site_id).attr('onclick', "bidDecrease(this)");
                 }
             });
         }

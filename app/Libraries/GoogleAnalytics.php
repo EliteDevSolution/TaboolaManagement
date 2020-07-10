@@ -197,7 +197,8 @@ class GoogleAnalytics{
     }//report
 
 
-    static function getSiteList($view_id, $dimensions, $metrics, $start_date, $end_date, $cmp_id){
+    static function getSiteList($view_id, $dimensions, $metrics, $start_date, $end_date, $cmp_id)
+    {
         // to make the request quicker
         
         // query the last month analytics

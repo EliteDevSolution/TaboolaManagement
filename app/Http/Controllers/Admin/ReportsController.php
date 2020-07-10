@@ -6,8 +6,6 @@ use DLW\Models\Report;
 use Illuminate\Http\Request;
 use DLW\Http\Controllers\Controller;
 use DLW\Libraries\GoogleAnalytics;
-use Illuminate\Support\Facades\Auth;
-
 
 use Analytics;
 use Spatie\Analytics\Period;
@@ -31,6 +29,12 @@ class ReportsController extends Controller
         $start_date = session('rep_start_date');
         $end_date = session('rep_end_date');
         $cur_view_id = session('cur_view_id');
+        $view_ids = session('view_ids');
+
+        if(!isset($cur_view_id))
+        {
+            $cur_view_id = $view_ids[0];
+        }
 
         if(!isset($start_date))
         {
@@ -41,7 +45,7 @@ class ReportsController extends Controller
 
         if(!isset($cur_view_id))
         {
-            $cur_view_id = "";
+            $cur_view_id = $view_ids[0];
         }
 
         $view_ids = session('view_ids');
@@ -51,8 +55,48 @@ class ReportsController extends Controller
         {
             $cur_currency = $prev_currency;
         }
-        //[ToboolaAccessToken: '.substr(session('access_token'),30).'...]
-        return view('admin.reports.index', ['title' => 'Report', 'currencies' => $currencies, 'curcurrency' => $cur_currency, 'rep_start_date' => $start_date, 'rep_end_date' => $end_date, 'cur_view_id' => $cur_view_id, 'view_ids' => $view_ids, 'view_id_urls' => $view_id_urls]);
+
+        
+        $viewid =$cur_view_id;
+        
+        GoogleAnalytics::setViewId($viewid);
+        //$time_reference = GoogleAnalytics::getTimeReference();
+        $activeUsers = GoogleAnalytics::activeUsersNow($viewid);
+        $activePages = GoogleAnalytics::activePagesNow($viewid);
+        $topDevices = GoogleAnalytics::topDevices();
+        $anaUsers = GoogleAnalytics::analyticUsers();
+        $returnUsers = GoogleAnalytics::returnUsers();
+        $users_country = GoogleAnalytics::usersCountry();
+
+        $start_date = session('rep_start_date');
+        $end_date = session('rep_end_date');
+
+        if(!isset($start_date))
+        {
+            $start_date = date('Y-m-d', strtotime("-1 days"));
+            $end_date = date('Y-m-d', strtotime("-1 days"));
+        }
+       
+        return view('admin.reports.index', [
+            'title' => 'Reports',
+            'allusercount' => 0,
+            'newusercount' => 0,
+            'time_tool' => 0,
+            'time_reference' => 0,
+            'activeusers' => $activeUsers,
+            'activepages' => $activePages,
+            'topdevices' => $topDevices,
+            'ana_users' => $anaUsers,
+            'return_users' => $returnUsers,
+            'users_country' => $users_country,
+            'rep_start_date' => $start_date,
+            'rep_end_date' => $end_date,
+            'cur_view_id' => $cur_view_id, 
+            'view_ids' => $view_ids, 
+            'view_id_urls' => $view_id_urls,
+            'currencies' => $currencies, 
+            'curcurrency' => $cur_currency, 
+        ]);
     }
 
     public function getAnalysisJson(Request $request)
