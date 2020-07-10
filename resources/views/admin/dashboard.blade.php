@@ -33,7 +33,7 @@
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-currency-usd"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_spend_total">R$ {{ $sum_spent }}</span>
+                        <span class="counter" id="s_spend_total">R$ 0</span>
                         Total Spends
                     </div>
                 </div>
@@ -42,7 +42,7 @@
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-cart-outline"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_rmax_total">R$ {{ $sum_benefit }}</span>
+                        <span class="counter" id="s_rmax_total">R$ 0</span>
                         Total Received Max
                     </div>
                 </div>
@@ -51,7 +51,7 @@
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-scale-balance"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_profit_total">R$ {{ $sum_profit }}</span>
+                        <span class="counter" id="s_profit_total">R$ 0</span>
                         Total Profit Max
                     </div>
                 </div>
@@ -60,7 +60,7 @@
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-cube-outline"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_roimax_total">{{ $sum_roi }} %</span>
+                        <span class="counter" id="s_roimax_total">0 %</span>
                         ROI Max
                     </div>
                 </div>
@@ -199,7 +199,6 @@
             var end = new Date("{{ $rep_end_date }}".replace( /(\d{4})-(\d{2})-(\d{2})/, "$1/$2/$3"));
             end = moment(end);
             $('#dashdate span').html(start.format('MMMM D, YYYY') + '~' + end.format('MMMM D, YYYY'));
-
             function cb(cstart, cend) {
                $('#dashdate span').html(cstart.format('MMMM D, YYYY') + '~' + cend.format('MMMM D, YYYY'));
 
@@ -512,7 +511,7 @@
 
     // Start datatables.init.js
         $(document).ready(function() {
-            
+            getTotalValues("{{ $rep_start_date }}", "{{ $rep_end_date }}");
         } );
         
     // End
