@@ -758,21 +758,29 @@ class SheetController extends Controller
             $found = array_filter($cmpCstBoost, function($v,$k) use ($siteid){
                     return $v['target'] == $siteid;
             }, ARRAY_FILTER_USE_BOTH); 
+            $method = "";
+            
             if(empty($found)) 
             {
+                $method = "ADD";
+
                 array_push($cmpCstBoost, [ "target" => $siteid, "cpc_modification" => floatval($changeval) ]);
             } else
             {
+                $method = "REPLACE";
                 $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = floatval($changeval);
             }
 
-            $sendVal = [
-               "publisher_bid_modifier" => [
-                     "values" => $cmpCstBoost
-                  ] 
-            ]; 
+            $modVal = [[ "target" => $siteid, "cpc_modification" => floatval($changeval) ]];
 
-            $result = Report::updateTaboolaCampaigns($cmpid, $sendVal);
+            $sendVal = [
+                "patch_operation" => $method,
+                "publisher_bid_modifier" => [
+                     "values" => $modVal
+                  ] 
+            ];
+
+            $result = Report::patchTaboolaCampaigns($cmpid, $sendVal);
             
             $tmpCmpSiteData = session('site_data');
 
@@ -785,7 +793,14 @@ class SheetController extends Controller
                 $tmpCmpSiteData[array_keys($site_found)[0]]['r_boost'] = floatval($changeval);
                 session()->put('site_data', $tmpCmpSiteData);
             }
-            session()->put("site_cstboost", $result['publisher_bid_modifier']['values']);
+            
+            if(!array_key_exists('publisher_bid_modifier', $result))
+            {
+                $res = $result['publisher_bid_modifier'];
+                return response()->json(['status'=>false]); 
+            }
+            session()->put("site_cstboost", $cmpCstBoost);
+
         } else if($type == "auto")
         {
             $cmpSiteData = session('site_data');
