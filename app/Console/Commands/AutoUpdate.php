@@ -190,6 +190,8 @@ class AutoUpdate extends Command
             $found = array_filter($cmpCstBoost, function($v,$k) use ($sitetitle){
                         return $v['target'] == $sitetitle;
                     }, ARRAY_FILTER_USE_BOTH);
+            
+            $cmpTmpCstBoost = [];
 
             if(sizeof($found) == 0)
             {
@@ -209,7 +211,8 @@ class AutoUpdate extends Command
                     }
                     $bidValue = round($bidValue, 2);
                 } 
-                array_push($cmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => $bidValue]);
+                //array_push($cmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => $bidValue]);
+                array_push($cmpTmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => $bidValue]);
             } else
             {
                 $curbidValue = $found[array_keys($found)[0]]["cpc_modification"];
@@ -228,9 +231,9 @@ class AutoUpdate extends Command
                     }
                     $bidValue = round($bidValue, 2);
                 }
-                $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
+                //$cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
+                array_push($cmpTmpCstBoost, [ "target" => $sitetitle, "cpc_modification" => $bidValue]);
             }
-
             
             // if($clicks >= 10)
             // {
@@ -314,13 +317,17 @@ class AutoUpdate extends Command
         //                     ] 
         //                 ];
 
+        // $sendVal =  [      
+        //                 "publisher_bid_modifier" => [
+        //                     "values" => $cmpCstBoost
+        //                 ] 
+        //             ];
 
         $sendVal =  [      
-                        "publisher_bid_modifier" => [
-                            "values" => $cmpCstBoost
-                        ] 
-                    ];
-
+            "publisher_bid_modifier" => [
+                "values" => $cmpTmpCstBoost
+            ] 
+        ];
         
         $result = $this->updateTaboolaCampaigns($token, $curCmpid, $sendVal);
 

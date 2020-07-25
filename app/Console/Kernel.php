@@ -38,7 +38,7 @@ class Kernel extends ConsoleKernel
         
         $schedule->command('cronjob:autoupdate')
           ->everyFiveMinutes()
-          ->between('0:15', '9:00');
+          ->between('0:15', '15:00');
     }
 
     /**
