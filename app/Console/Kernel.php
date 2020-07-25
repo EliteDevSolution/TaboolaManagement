@@ -34,11 +34,11 @@ class Kernel extends ConsoleKernel
         echo $start_date."\n";
         
         $schedule->command('cronjob:autoinit')
-                           ->dailyAt('2:55');
+                           ->dailyAt('0:05');
         
         $schedule->command('cronjob:autoupdate')
           ->everyFiveMinutes()
-          ->between('3:05', '9:00');
+          ->between('0:15', '9:00');
     }
 
     /**
