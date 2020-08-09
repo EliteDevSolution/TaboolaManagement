@@ -276,6 +276,7 @@
     <script src="{{ asset('assets/admin/plugins/toastr/toastr.min.js') }}"></script>    
 
     <script>
+        let baseUrl = "{{ url('/') }}";
     
         $(function() {
 
@@ -693,7 +694,7 @@
                     onRegionTipShow: function(e, el, code){
                         let sessionCnt = country_info[code];
                         if(typeof sessionCnt === 'undefined') sessionCnt = 0;
-                        el.html(el.html()+ "&nbsp;<img src=\"assets/admin/images/flag/" + code.toString().toLowerCase() + ".png\" style='width: 20px; height: 14px;'/> " + " (Sessions: " + sessionCnt + ")");
+                        el.html(el.html()+ `&nbsp;<img src=\"${baseUrl}/assets/admin/images/flag/` + code.toString().toLowerCase() + ".png\" style='width: 20px; height: 14px;'/> " + " (Sessions: " + sessionCnt + ")");
                     },
                         
                     backgroundColor : 'transparent',
