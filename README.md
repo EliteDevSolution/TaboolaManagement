@@ -1,7 +1,8 @@
 # TaboolaManagement
  This project is Taboola & Google Analysitc API Integration.
  
-## Screenshots
+## Publish Url
+ https://system.smartpublishers.co/
 
 
 ## Get Started
