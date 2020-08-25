@@ -19,7 +19,7 @@
                     </select>
                     <button id="currency_setting" data-toggle="popover" onclick="showCurrencySetting(this)" class="btn btn-secondary waves-effect waves-light btn-sm list-inline"><i class="mdi mdi-settings"></i></button>
 
-                    <div class="m-b-10 col-md-2 list-inline float-right" id="reportrange" style="border-bottom: 1px solid;border-bottom-color: #aeaeae;cursor: pointer;">
+                    <div class="m-b-10 list-inline float-right" id="reportrange" style="border-bottom: 1px solid;border-bottom-color: #aeaeae;cursor: pointer;">
                         <i class="fa fa-calendar"></i>&nbsp;
                         <span></span> <i class="fa fa-caret-down"></i>
                     </div>    
@@ -78,8 +78,6 @@
     <link href="{{ asset('assets/admin/plugins/toastr/toastr.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/admin/plugins/select2/select2.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/admin/plugins/sweet-alert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
-
-
     <link href="{{ asset('assets/admin/css/main.css') }}" rel="stylesheet" type="text/css" />
 
 
@@ -374,14 +372,31 @@
                                             type: 'warning',
                                             showCancelButton: true,
                                             confirmButtonClass: 'btn btn-success',
-                                            cancelButtonClass: 'btn btn-danger m-l-10',
-                                            confirmButtonText: 'Yes, change them!'
+                                            cancelButtonClass: 'btn btn-info',
+                                            confirmButtonText: 'Max>Amount',
+                                            cancelButtonText: 'Max&ltAmount',
+                                            cancelButtonColor: '#d33',
+                                            showCloseButton: true,
                                         }).then(function () {
                                             var margin = $('#selcampaigns option:selected').attr('margin');
-                                            updateCampaign("auto", "", margin, function(res)
+                                            updateCampaign("auto", "method_1", margin, function(res)
                                             {
-                                                $('#selcurrency').trigger('change');
+                                                if(res.status == true)
+                                                    $('#selcurrency').trigger('change');
+                                                else
+                                                    $.unblockUI();
                                             });
+                                        },function(dismiss) {
+                                            var margin = $('#selcampaigns option:selected').attr('margin');
+                                            if (dismiss === 'cancel') {
+                                                updateCampaign("auto", "method_2", margin, function(res)
+                                                {
+                                                    if(res.status == true)
+                                                        $('#selcurrency').trigger('change');
+                                                    else
+                                                        $.unblockUI();
+                                                });
+                                            } 
                                         });
                                     }
                                 },

@@ -807,7 +807,12 @@ class SheetController extends Controller
             $tmpCmpSiteData = $cmpSiteData;
             $margin = $changeval;
             $site_status_list = session('site_status_list');
-
+            $method = $siteid;
+            $avCnt = 0;
+            $newCmpLst = [];
+            $sitetmpLst = session('site_cstboost_tmp');
+            if(isset($sitetmpLst))
+                $newCmpLst = $sitetmpLst;
             foreach ($cmpSiteData as $key => $value) {
                 
                 if(array_key_exists($value['site_id'], $site_status_list))
@@ -831,7 +836,11 @@ class SheetController extends Controller
 
                 //Bid amount update condition
                 
-                if($value['roi_max'] > 30) continue;
+                if($value['clicks'] < 10 || $value['bid_max'] < 0.015) continue;
+                
+                //if($value['roi_max'] > 30) continue;
+                if($method == 'method_1' && $value['bid_max'] <= $value['default_bid']) continue;
+                if($method == 'method_2' && $value['bid_max'] > $value['default_bid']) continue;
                 
                 $bidValue = $value['bid_max'] / $value['default_bid'];
 
@@ -842,137 +851,64 @@ class SheetController extends Controller
                 {
                     $bidValue = 2; 
                 }
-                
-                if($value['clicks'] < 10)
-                {
-                    if($value['roi_max'] < 0)
-                    {
-                        $bidValue = 0.025 / $value['default_bid'];
-                    } else
-                    {
-                        if($bidValue > 1.2) $bidValue = 1.2;
-                        if($value['bid_max'] < 0.025) $bidValue = 0.025 / $value['default_bid'];
-                    }
-                }
-
+   
                 $bidValue = round($bidValue, 2);
+                
 
-                $found = array_filter($cmpCstBoost, function($v,$k) use ($siteid){
+                $found = array_filter($newCmpLst, function($v,$k) use ($siteid){
                     return $v['target'] == $siteid;
                 }, ARRAY_FILTER_USE_BOTH); 
 
                 if(sizeof($found) == 0)
                 {
-                    $curbidValue = 1;
-                    
-                    if($curbidValue * $value['default_bid'] > 0.05)
-                    {
-                        $bidValue = 0.5;
-                    } else
-                    {
-                        $bidValue = 0.8;
-                    }
+                    // $curbidValue = 1;
+                    // if($curbidValue * $value['default_bid'] > 0.05)
+                    // {
+                    //     $bidValue = 0.5;
+                    // } else
+                    // {
+                    //     $bidValue = 0.8;
+                    // }
                     if($value['default_bid'] * $bidValue < 0.025)
                     {
                         $bidValue = 0.025 / $value['default_bid'];
+                        $bidValue = round($bidValue, 2);
+                        if($bidValue * $value['default_bid'] < 0.025)
+                        {
+                            $bidValue = 0.0255 / $value['default_bid'];
+                            $bidValue = round($bidValue, 2);
+                        }
                     }
-                    $bidValue = round($bidValue, 2);
-
+                    array_push($newCmpLst, [ "target" => $siteid, "cpc_modification" => $bidValue]);
                     array_push($cmpCstBoost, [ "target" => $siteid, "cpc_modification" => $bidValue]);
                     $tmpCmpSiteData[$key]['r_boost'] = $bidValue;
                 } else
                 {
-                    $curbidValue = $value['r_boost'];
+                    //$curbidValue = $value['r_boost'];
                     
-                    if($curbidValue * $value['default_bid'] > 0.05)
-                    {
-                        $bidValue = 1 - 0.5;
-                    } else
-                    {
-                        $bidValue = 1 - 0.2;
-                    }
-                    if($value['default_bid'] * $bidValue < 0.025)
-                    {
+                    // if($curbidValue * $value['default_bid'] > 0.05)
+                    // {
+                    //     $bidValue = 1 - 0.5;
+                    // } else
+                    // {
+                    //     $bidValue = 1 - 0.2;
+                    // }
+                     if($value['default_bid'] * $bidValue < 0.025)
+                     {
                         $bidValue = 0.025 / $value['default_bid'];
-                    }
-                    $bidValue = round($bidValue, 2);
-                    
+                        $bidValue = round($bidValue, 2);
+                        if($bidValue * $value['default_bid'] < 0.025)
+                        {
+                            $bidValue = 0.0255 / $value['default_bid'];
+                            $bidValue = round($bidValue, 2);
+                        }
+                     }
                     $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
+                    $newCmpLst[array_keys($found)[0]]["cpc_modification"] = $bidValue;
+                    //array_push($newCmpLst, [ "target" => $siteid, "cpc_modification" => $bidValue]);
                     $tmpCmpSiteData[$key]['r_boost'] = $bidValue;
                 }
-
-                // if($value['clicks'] >= 10) 
-                // {
-                //     //var_dump( $value['site_id'].':'.$value['site_name'].'  '.$value['clicks'].'  ');
-                //     if($value['roi_max'] > 0)
-                //     {
-                //         $bidValue = $value['roi_max'] * $value['bid_actual'] / 100 / $value['default_bid'];
-                //         if($value['roi_max'] * $value['bid_actual'] / 100 < 0.025)
-                //             $bidValue = 0.025 / $value['default_bid'];
-                //     }
-                //     else
-                //     {
-                //         $bidValue = $value['roi_max'] * 60 / 100 / $value['default_bid'];
-                //         if($value['roi_max'] * 60 / 100 < 0.025)
-                //             $bidValue = 0.025 / $value['default_bid'];
-                //     }
-
-                //     //if($value['bid_max'] < 0.025) 
-                //     //$bidValue = 0.025 / $value['default_bid'];
-                //     $bidValue = round($bidValue, 2);
-                //     if($bidValue > 1.3) $bidValue = 1.3;
-                //     if($bidValue < 0.7) $bidValue = 0.7;
-
-                //     $found = array_filter($cmpCstBoost, function($v,$k) use ($siteid){
-                //         return $v['target'] == $siteid;
-                //     }, ARRAY_FILTER_USE_BOTH); 
-
-                //     if(sizeof($found) == 0)
-                //     {
-                //         // if(1 - $bidValue > 0.1)
-                //         // {
-                //         //     $bidValue = 0.9;
-                //         // }
-                //         // if($value['default_bid'] * $bidValue < 0.025) 
-                //         // {
-                //         //     $bidValue = 0.025 / $value['default_bid'];
-                //         //     $bidValue = round($bidValue, 2);
-                //         // }
-                //         array_push($cmpCstBoost, [ "target" => $siteid, "cpc_modification" => $bidValue]);
-                //         $tmpCmpSiteData[$key]['r_boost'] = $bidValue;
-                //     } else
-                //     {
-                //         // if(1 - $bidValue > 0.1)
-                //         // {
-                //         //     $bidValue = $value['r_boost'] - 0.1;
-                //         // }
-                //         // if($value['default_bid'] * $bidValue < 0.025) 
-                //         // {
-                //         //     $bidValue = 0.025 / $value['default_bid'];
-                //         //     $bidValue = round($bidValue, 2);
-                //         // }
-                        
-                //         $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
-                //         $tmpCmpSiteData[$key]['r_boost'] = $bidValue;
-                //     }
-                // } else if($value['roi_max'] > 0) {    //step by step control
-                //     $bidValue = $value['r_boost'] + 0.1;
-                //     $bidValue = round($bidValue, 2);
-                //     if($bidValue > 1.5) $bidValue = 1.5;
-
-                //     $found = array_filter($cmpCstBoost, function($v,$k) use ($siteid){
-                //         return $v['target'] == $siteid;
-                //     }, ARRAY_FILTER_USE_BOTH); 
-
-                //     if(sizeof($found) == 0)
-                //     {
-                //         array_push($cmpCstBoost, [ "target" => $siteid, "cpc_modification" => $bidValue]);
-                //     } else
-                //     {
-                //         $cmpCstBoost[array_keys($found)[0]]["cpc_modification"] = $bidValue;
-                //     }
-                //     $tmpCmpSiteData[$key]['r_boost'] = $bidValue;
-                // }
+                $avCnt ++;
             }
 
             // $sendVal =  [    
@@ -984,18 +920,21 @@ class SheetController extends Controller
             //                         "values" => $cmpCstBoost
             //                     ] 
             //                 ];
-
+            
+            if($avCnt == 0)
+                return response()->json(['status'=>false]); 
+            //dd($newCmpLst);
             $sendVal =  [
                             "publisher_bid_modifier" => [
-                                "values" => $cmpCstBoost
+                                "values" => $newCmpLst
                             ] 
                         ];
-
 
             $result = Report::updateTaboolaCampaigns($cmpid, $sendVal);
             //session()->put("site_blocklist", $result['publisher_targeting']['value']);
             session()->put('site_data', $tmpCmpSiteData);
-            session()->put("site_cstboost", $result['publisher_bid_modifier']['values']);
+            session()->put("site_cstboost", $cmpCstBoost);
+            session()->put("site_cstboost_tmp", $result['publisher_bid_modifier']['values']);
         } else if($type == "reset")
         {
             $cmpSiteData = session('site_data');

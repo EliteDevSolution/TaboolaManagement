@@ -8,7 +8,7 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <div class="m-b-10 col-md-2 list-inline float-right" id="dashdate" style="border-bottom: 1px solid;border-bottom-color: #aeaeae;cursor: pointer;">
+                <div class="m-b-10 list-inline float-right" id="dashdate" style="border-bottom: 1px solid;border-bottom-color: #aeaeae;cursor: pointer;">
                     <i class="fa fa-calendar"></i>&nbsp;
                     <span></span> <i class="fa fa-caret-down"></i>
                 </div>
@@ -138,7 +138,7 @@
     <link href="{{ asset('assets/admin/plugins/toastr/toastr.min.css') }}" rel="stylesheet" type="text/css" />
     </style>
 @endpush
-
+ 
 @push('scripts')
     <script src="{{ asset('assets/admin/plugins/morris/morris.min.js') }}"></script>
     <script src="{{ asset('assets/admin/plugins/raphael/raphael-min.js') }}"></script>

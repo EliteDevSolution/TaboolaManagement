@@ -115,7 +115,7 @@
             }//end Blockui   
 
             var new_notification_count = 0;
-            init_new_notification();
+            //init_new_notification();
             
             function init_new_notification(){
                 $.ajax({
