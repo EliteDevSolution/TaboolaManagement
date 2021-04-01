@@ -2,12 +2,14 @@
 
 namespace DLW\Http\Controllers\Admin;
 
+use Cassandra\Date;
 use Illuminate\Http\Request;
 use DLW\Http\Controllers\Controller;
 use DLW\Libraries\GoogleAnalytics;
 use DLW\Models\Score;
 use DLW\Models\Report;
 use Illuminate\Support\Facades\Auth;
+use File;
 
 use Analytics;
 use Spatie\Analytics\Period;
@@ -22,12 +24,10 @@ class DashboardController extends Controller
 
     public function index()
     {
-        
         ////
         $startDate = Carbon::now()->subYear();
         $endDate = Carbon::now();
-        $period = Period::create( $startDate, $endDate );
-        //Period::months(2), Period::days(2)
+
         //////
         $end_date = date('Y-m-d');
         $start_date = date('Y-m-d', strtotime("-1 months"));
@@ -35,6 +35,8 @@ class DashboardController extends Controller
         //$allUserCount = User::all()->count();
         //$newUserCount = User::newUserCountRecently(1);
         //$time_tool = GoogleAnalytics::getTimeTool();
+        //$period = Period::create( $startDate, $endDate );
+        //Period::months(2), Period::days(2)
 
         $cur_view_id = session('cur_all_view_id');
         $view_ids = session('view_ids');
@@ -53,38 +55,41 @@ class DashboardController extends Controller
 
         if(!isset($start_date))
         {
-            //$end_date = date('Y-m-d');
-            //$start_date = date('Y-m-d');
             $start_date = date('Y-m-d', strtotime("-1 days"));
             $end_date = date('Y-m-d', strtotime("-1 days"));
             session()->put("rep_start_date", $start_date);
             session()->put("rep_end_date", $end_date);
         }
 
+        $begin = new \DateTime( $start_date);
+        $end = new \DateTime( $end_date );
+        $end = $end->modify( '+1 day' );
+        $interval = new \DateInterval('P1D');
+        $daterange = new \DatePeriod($begin, $interval ,$end);
+
         $currencyType = intval(session('currency_type'));
-        $currency = "BRL";
+        $currency = 'BRL';
+
         if($currencyType == 0)  //Auto Method...
         {
-            $lastestCurrecyRate = floatval(Report::getLastestCurrencyRate());
+            $currencyRate = Report::getCurrenciesRate($currency);
+            $currecyMaxRate = floatval(session('currency_max_'.$currency));
+            $braRate = session('currency_BRL');
         } else                  //Manual Method...
         {
-            $lastestCurrecyRate = floatval(session('currency_m_max_'.$currency));
+            $currencyRate = floatval(session('currency_m_'.$currency));
+            $currecyMaxRate = floatval(session('currency_m_max_'.$currency));
+            $braRate = session('currency_m_BRL');
+            session()->put('cur_currency', $currency);
         }
 
-        $taboolaRes = [];
-        if($start_date == $end_date)
-        {
-            $taboolaRes = Report::getTaboolaByHours($start_date, $end_date)['results'];
-        } else
-        {
-            $taboolaRes = Report::getTaboolaDays($start_date, $end_date)['results'];
-        }
 
-        $dementionLst = ['ga:date'];
-        if($start_date == $end_date) $dementionLst = ['ga:hour'];
+        $taboolaRes = Report::getTaboolaCampaignsDay($start_date, $end_date)['results'] ?? [];
+
+        $dementionLst = ['ga:date','ga:adContent','ga:source'];
         $matrixLst = ['ga:adsenseRevenue'];
-        
-        $view_ids = session('view_ids');
+
+        $view_ids = session('view_ids') ?? [];
 
         $result = [];
         $keyList = [];
@@ -92,18 +97,13 @@ class DashboardController extends Controller
         if($cur_view_id != "0")
         {
             $result = GoogleAnalytics::getAllCampaign($cur_view_id, $dementionLst, $matrixLst, $start_date, $end_date);
-            $lastGoogleRes = $result; 
+            $lastGoogleRes = $result;
         } else
         {
             foreach ($view_ids as $key => $value) {
                 $lastGoogleRes = GoogleAnalytics::getAllCampaign($value, $dementionLst, $matrixLst, $start_date, $end_date);
                 $result = array_merge($result, $lastGoogleRes);
             }
-        }
-        
-        foreach($lastGoogleRes as $value)
-        {
-            $keyList[] = $value[0];
         }
 
         $gBenefitArray = array();
@@ -116,64 +116,77 @@ class DashboardController extends Controller
         $sum_roi = 0;
         $sum_profit = 0;
 
-        if($start_date == $end_date)
+        //Calculation processor..../////
+        $sendVal = [];
+        $sum_recevied = 0;
+        $sum_spent = 0;
+        foreach($daterange as $date)
         {
-            for($hourVal = 0; $hourVal < 24; $hourVal++)
-            {
-                $gBenefitArray[$hourVal] = round($this->findHourTotal($result, $hourVal) * $lastestCurrecyRate, 2);
-                $taboolaSpentArray[$hourVal] = $this->findTaboolaHourValue($taboolaRes, $hourVal);
-                $profitMaxArray[$hourVal] = round($gBenefitArray[$hourVal] - $taboolaSpentArray[$hourVal], 2);
-                if($taboolaSpentArray[$hourVal] == 0)
-                {
-                    $roiArray[$hourVal] = round($profitMaxArray[$hourVal] * 100, 2);
-                }
-                else                
-                {
-                    $roiArray[$hourVal] = round($profitMaxArray[$hourVal] / $taboolaSpentArray[$hourVal] * 100, 2);
-                }
 
-                $sum_gBenefit += $gBenefitArray[$hourVal];
-                $sum_tSpent += $taboolaSpentArray[$hourVal];
-            }
-        } else
-        {
-            foreach($keyList as $val)
+            $curDate = $date->format("Y-m-d");
+            $curGoogleDate = $date->format("Ymd");
+            $total_Recevied = 0;
+            $cmpid_list = [];
+            $cmptitle_list = '';
+            $receive_list = [];
+
+            foreach ($result as $item)
             {
-                $dateVal = date("Y-m-d", strtotime($val));
-                $gBenefitArray[$dateVal] = round($this->findDayTotal($result, $val) * $lastestCurrecyRate, 2);
-                $taboolaSpentArray[$dateVal] = $this->findTaboolaDayValue($taboolaRes, $val);
-                $profitMaxArray[$dateVal] = round($gBenefitArray[$dateVal] - $taboolaSpentArray[$dateVal], 2);
-                if($taboolaSpentArray[$dateVal] == 0)
+                if($item[1] == "(not set)") continue;
+                if($item[0] == $curGoogleDate)
                 {
-                    $roiArray[$dateVal] = round($profitMaxArray[$dateVal] * 100, 2);
+                    $cmpid_list[] = $item[1];
+                    $cmptitle_list .= $item[2];
+                    if (!isset($receive_list[$item[1]]))
+                        $receive_list[$item[1]] = $item[3] * $currecyMaxRate;
+                    else
+                        $receive_list[$item[1]] += $item[3] * $currecyMaxRate;
                 }
-                else                
-                {
-                    $roiArray[$dateVal] = round($profitMaxArray[$dateVal] / $taboolaSpentArray[$dateVal] * 100, 2);
-                }
-                $sum_gBenefit += $gBenefitArray[$dateVal];
-                $sum_tSpent += $taboolaSpentArray[$dateVal];
             }
+            $total_Spent = 0;
+            foreach ($taboolaRes as $key => $v)
+            {
+                $curId = $v['campaign'];
+                if(preg_match("/\b$curDate\b/i", $v['date']) && (in_array($v['campaign'], $cmpid_list) || preg_match("/\b$curId\b/i", $cmptitle_list)))
+                {
+                    $total_Recevied += $receive_list[$curId];
+                    //array_push($totalR, $receive_list[$curId]);
+                    if($v['spent'] == 0) continue;
+                    $total_Spent += round($v['spent'],2);
+                }
+            }
+
+            $curVal['total_recevie'] = round($total_Recevied,2);
+            $curVal['total_spent'] = $total_Spent;
+            $curVal['total_profit'] = round($total_Recevied - $total_Spent, 2);
+            if($total_Spent == 0)
+                $curVal['total_roi'] = round($curVal['total_profit'] * 100, 2);
+            else
+                $curVal['total_roi'] = round($curVal['total_profit'] / $total_Spent * 100, 2);
+
+            $sendVal[$curDate] = $curVal;
+            $sum_spent += $total_Spent;
+            $sum_recevied += $total_Recevied;
         }
 
-        $sum_profit = round($sum_gBenefit - $sum_tSpent, 2);
-        if($sum_tSpent == 0)
+        $sum_profit = round($sum_recevied - $sum_spent, 2);
+        if($sum_spent == 0)
         {
             $sum_roi = round($sum_profit * 100, 2);
         } else
         {
-            $sum_roi = round($sum_profit / $sum_tSpent * 100, 2);
+            $sum_roi = round($sum_profit / $sum_spent * 100, 2);
         }
-        
-        $sum_gBenefit = number_format($sum_gBenefit, 2, '.', ',');
-        $sum_tSpent = number_format($sum_tSpent, 2, '.', ',');
+        $sum_gBenefit = number_format($sum_recevied, 2, '.', ',');
+        $sum_tSpent = number_format($sum_spent, 2, '.', ',');
         $sum_profit = number_format($sum_profit, 2, '.', ',');
         $sum_roi = number_format($sum_roi, 2, '.', ',');
-        
+
         //$anaUsers = GoogleAnalytics::analyticUsers();
 
         return view('admin.dashboard', [
             'title' => 'Dashboard',
+            'send_val' => $sendVal,
             'g_benefit' => $gBenefitArray,
             't_spent' => $taboolaSpentArray,
             'roi' => $roiArray,
@@ -184,7 +197,7 @@ class DashboardController extends Controller
             'sum_roi' => $sum_roi,
             'rep_start_date' => $start_date,
             'rep_end_date' => $end_date,
-            'cur_view_id' => $viewid, 
+            'cur_view_id' => $viewid,
             'view_ids' => $view_ids,
             'view_id_urls' => $view_id_urls,
         ]);
@@ -238,14 +251,14 @@ class DashboardController extends Controller
 
         if(sizeof($res) == 0)
             return response()->json(['status'=>false]);
-        
+
         $dementionLst = ['ga:date'];
         $matrixLst = ['ga:adsenseRevenue', 'ga:adsenseAdsClicks', 'ga:adsensePageImpressions', 'ga:adsenseCTR', 'ga:adsenseECPM'];
-        
+
         $view_ids = session('view_ids');
 
         $result = [];
-        
+
         foreach ($view_ids as $key => $value) {
             $result = array_merge($result, GoogleAnalytics::getAllCampaign($value, $dementionLst, $matrixLst, $start_date, $end_date));
         }
@@ -255,7 +268,7 @@ class DashboardController extends Controller
         $s_rMax = 0;
         $s_lMax = 0;
         $s_roiMax = 0;
-        
+
         $count = 0;
 
         foreach($result as $row)
@@ -274,7 +287,7 @@ class DashboardController extends Controller
         {
             $s_roiMax = number_format(round($s_lMax / 1 * 100, 2), 2, '.', ',');
         }
-        else                
+        else
         {
             $s_roiMax = number_format(round($s_lMax / $s_spent * 100, 2), 2, '.', ',');
         }
@@ -285,7 +298,7 @@ class DashboardController extends Controller
         $s_lMax = number_format(round($s_lMax, 2), 2, '.', ',');
         return response()->json(['status'=>true, 's_spent' => $s_spent, 's_rmax' => $s_rMax, 's_lmax' => $s_lMax, 's_roimax' => $s_roiMax]);
     }
-    
+
     public function getTotalValue(Request $request)
     {
         $start_date = $request->get('startDate');
@@ -306,16 +319,16 @@ class DashboardController extends Controller
             $currecyMaxRate = floatval(session('currency_m_max_'.$currency));
             $braRate = session('currency_m_BRL');
         }
-        
+
 
         $res = Report::getTaboolaCampaigns($start_date, $end_date);
-        
+
         if(sizeof($res) == 0)
             return response()->json(['status'=>false]);
-        
+
         $dementionLst = ['ga:adContent','ga:source'];
         $matrixLst = ['ga:adsenseRevenue', 'ga:adsenseAdsClicks', 'ga:adsensePageImpressions', 'ga:adsenseCTR', 'ga:adsenseECPM'];
-        
+
         $view_ids = session('view_ids');
 
         $result = [];
@@ -328,39 +341,39 @@ class DashboardController extends Controller
         $s_rMax = 0;
         $s_lMax = 0;
         $s_roiMax = 0;
-        
+
         $count = 0;
         foreach($res['results'] as $value)
         {
             $cmp_id = $value['campaign'];
             $spent = $value['spent'];
             $clicks = $value['clicks'];
-            
+
             if(floatval($spent) == 0 && floatval($clicks) == 0)
                 continue;
 
             $findVal = $this->findCampaign($result, $cmp_id);
             if(empty($findVal)) continue;
 
-            
+
             $spent = floatval($spent)/floatval($braRate)*$currencyRate;
             $gSpent = $findVal[2]*$currencyRate;
 
             $rMax = $gSpent/$currencyRate*$currecyMaxRate;
-            
+
             $lMax = $gSpent/$currencyRate*$currecyMaxRate - $spent;
             $roiMax = $lMax / $spent * 100;
-            
+
             $s_spent += $spent;
             $s_gSpent += $gSpent;
             $s_rMax += $rMax;
             $s_roiMax += $roiMax;
             $s_lMax += $lMax;
-            
+
             $count++;
         }
 
-        if($count == 0) 
+        if($count == 0)
         {
             return response()->json(['status'=>false]);
         } else
@@ -369,7 +382,7 @@ class DashboardController extends Controller
             {
                 $s_roiMax = number_format(round($s_lMax / 1 * 100, 2), 2, '.', ',');
             }
-            else                
+            else
             {
                 $s_roiMax = number_format(round($s_lMax / $s_spent * 100, 2), 2, '.', ',');
             }
@@ -378,11 +391,11 @@ class DashboardController extends Controller
             $s_lMax = number_format(round($s_lMax, 2), 2, '.', ',');
             return response()->json(['status'=>true, 's_spent' => $s_spent, 's_rmax' => $s_rMax, 's_lmax' => $s_lMax, 's_roimax' => $s_roiMax]);
         }
-    }    
-    
+    }
+
     public function findCampaign($data, $id)
     {
-        foreach ($data as $key => $value) 
+        foreach ($data as $key => $value)
         {
             if(preg_match("/\b$id\b/i", $value[0]) || preg_match("/\b$id\b/i", $value[1]))
                 return $value;
@@ -394,7 +407,7 @@ class DashboardController extends Controller
     {
         if(strlen($val) == 1) $val = '0'.$val;
         $val .= ":00";
-        foreach ($data as $key => $value) 
+        foreach ($data as $key => $value)
         {
             if(preg_match("/\b$val\b/i", $value['hour_of_day']))
             {
@@ -408,7 +421,7 @@ class DashboardController extends Controller
     {
         $sum = 0;
         if(strlen($val) == 1) $val = '0'.$val;
-        foreach ($data as $key => $value) 
+        foreach ($data as $key => $value)
         {
             if(preg_match("/\b$val\b/i", $value[0]))
             {
@@ -421,7 +434,7 @@ class DashboardController extends Controller
     public function findDayTotal($data, $val)
     {
         $sum = 0;
-        foreach ($data as $key => $value) 
+        foreach ($data as $key => $value)
         {
             if(preg_match("/\b$val\b/i", $value[0]))
             {
@@ -432,9 +445,9 @@ class DashboardController extends Controller
     }
 
     public function findTaboolaDayValue($data, $val)
-    {   
+    {
         $val = date("Y-m-d", strtotime($val));
-        foreach ($data as $key => $value) 
+        foreach ($data as $key => $value)
         {
             if(preg_match("/\b$val\b/i", $value['date']))
             {
@@ -444,7 +457,4 @@ class DashboardController extends Controller
         return 0;
     }
 
-
-
-    
 }

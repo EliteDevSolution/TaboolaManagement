@@ -15,6 +15,10 @@
                         <form method="post" action="{{ route('admins.update',$admin->id) }}" enctype="multipart/form-data">
                             {{ csrf_field() }}
                             {{ method_field('PUT') }}
+                            @php
+                                $display = '';
+                                if($admin->is_super == 1) $display = 'none';
+                            @endphp
                             @if($errors->any())
                                 @php
                                     $admin->name=old('name');
@@ -23,13 +27,12 @@
                                     $admin->client_id=old('client_id');
                                     $admin->client_secret=old('client_secret');
                                     $admin->account_name=old('account_name');
-
                                 @endphp
                             @endif
                             <div class="form-group row
                             @if($errors->has('name'))
                                 has-danger
-                            @endif">
+                            @endif" style="display: {{ $display }}">
                                 <label class="col-sm-2 col-form-label">Name</label>
                                 <div class="col-sm-10">
                                     <input name="name" class="form-control" type="text" value="{{ $admin->name }}" id="example-text-input">
@@ -38,7 +41,7 @@
                                     @endif
                                 </div>
                             </div>
-                            
+
                             <div class="form-group row
                             @if($errors->has('email'))
                                 has-danger
@@ -58,7 +61,7 @@
                             @endif">
                                 <label class="col-sm-2 col-form-label">View IDS</label>
                                 <div class="col-sm-10">
-                                    <input name="view_id" class="form-control" data-role="tagsinput" id="tag-viewids" value="{{ $admin->view_id }}" required>
+                                    <input name="view_id" class="form-control" data-role="tagsinput" id="tag-viewids" value="{{ $admin->view_id }}">
                                     @if ($errors->has('view_id'))
                                         <div class="form-control-feedback" >{{ $errors->first('view_id') }}</div>
                                     @endif
@@ -110,23 +113,114 @@
                             @endif">
                                 <label class="col-sm-2 col-form-label">Avatar</label>
                                 <div class="col-sm-10">
-                                    <input name="avatar" class="form-control" type="file" id="example-file-input">
+                                    <input name="avatar" class="form-control" type="file" id="avatar">
                                     @if ($errors->has('avatar'))
                                         <div class="form-control-feedback" >{{ $errors->first('avatar') }}</div>
                                     @endif
                                 </div>
                             </div>
                             
-                             <div class="form-group row 
+                            <div class="form-group row
                             @if($errors->has('password'))
                                 has-danger
                             @endif">
                                 <label for="example-password-input" class="col-sm-2 col-form-label">Password</label>
                                 <div class="col-sm-10">
-                                    <input name="password" class="form-control" type="password" id="example-password-input" required>
+                                    <input name="password" class="form-control" type="password" id="example-password-input">
                                     @if ($errors->has('password'))
                                         <div class="form-control-feedback" >{{ $errors->first('password') }}</div>
                                     @endif
+                                </div>
+                            </div>
+
+                            <div class="form-group row
+                            @if($errors->has('currency_min'))
+                                    has-danger
+                            @endif">
+                                <label class="col-sm-2 col-form-label">Currency Min(USD:BRL)</label>
+                                <div class="col-sm-10">
+                                    <input name="currency_min" class="form-control" type="number" min=0 max=100 step="0.01" id="currency_min" value="{{ old('currency_min', $currency_min) }}" required>
+                                    @if ($errors->has('currency_min'))
+                                        <div class="form-control-feedback" >{{ $errors->first('currency_min') }}</div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="form-group row
+                            @if($errors->has('currency_max'))
+                                    has-danger
+                            @endif">
+                                <label class="col-sm-2 col-form-label">Currency Max(USD:BRL)</label>
+                                <div class="col-sm-10">
+                                    <input name="currency_max" class="form-control" type="number" min=0 max=100 step="0.01" id="currency_max" value="{{ old('currency_max', $currency_max) }}" required>
+                                    @if ($errors->has('currency_max'))
+                                        <div class="form-control-feedback" >{{ $errors->first('currency_max') }}</div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="form-group row" style="display:{{ $display }};">
+                                <label class="col-sm-2 col-form-label">Permission</label>
+                                <div class="col-sm-10">
+                                    <label class="custom-control custom-checkbox">
+                                        {{ Form::checkbox('report_page', null, old('report_page', $report_page ?? ''), array('id'=>'report_page', 'class'=> 'custom-control-input')) }}
+                                        <span class="custom-control-indicator"></span>
+                                        <span class="custom-control-description">Report</span>
+                                    </label>
+
+                                    <label class="custom-control custom-checkbox">
+                                        {{ Form::checkbox('campaign_management_page', null, old('campaign_management_page', $campaign_management_page ?? ''), array('id'=>'campaign_management_page', 'class'=> 'custom-control-input')) }}
+                                        <span class="custom-control-indicator"></span>
+                                        <span class="custom-control-description">Campaigns</span>
+                                    </label>
+
+                                    <label class="custom-control custom-checkbox">
+                                        {{ Form::checkbox('ads_page', null, old('ads_page', $ads_page ?? ''), array('id'=>'ads_page', 'class'=> 'custom-control-input')) }}
+                                        <span class="custom-control-indicator"></span>
+                                        <span class="custom-control-description">Ads</span>
+                                    </label>
+
+                                    <label class="custom-control custom-checkbox">
+                                        {{ Form::checkbox('campaign_page', null, old('campaign_page', $campaign_page ?? ''), array('id'=>'campaign_page', 'class'=> 'custom-control-input')) }}
+                                        <span class="custom-control-indicator"></span>
+                                        <span class="custom-control-description">Sheet</span>
+                                    </label>
+
+                                    <label class="custom-control custom-checkbox">
+                                        {{ Form::checkbox('column_visibility', null, old('column_visibility', $column_visibility ?? ''), array('id'=>'column_visibility', 'class'=> 'custom-control-input')) }}
+                                        <span class="custom-control-indicator"></span>
+                                        <span class="custom-control-description">Column Visibility</span>
+                                    </label>
+
+                                    <label class="custom-control custom-checkbox">
+                                        {{ Form::checkbox('currency_setting', null, old('currency_setting', $currency_setting ?? ''), array('id'=>'currency_setting', 'class'=> 'custom-control-input')) }}
+                                        <span class="custom-control-indicator"></span>
+                                        <span class="custom-control-description">Currency Setting</span>
+                                    </label>
+
+                                    <label class="custom-control custom-checkbox">
+                                        {{ Form::checkbox('financial_setting', null, old('financial_setting', $financial_setting ?? ''), array('id'=>'financial_setting', 'class'=> 'custom-control-input')) }}
+                                        <span class="custom-control-indicator"></span>
+                                        <span class="custom-control-description">Financial Setting</span>
+                                    </label>
+
+                                    <label class="custom-control custom-checkbox">
+                                        {{ Form::checkbox('payment_history', null, old('payment_history', $payment_history ?? ''), array('id'=>'payment_history', 'class'=> 'custom-control-input')) }}
+                                        <span class="custom-control-indicator"></span>
+                                        <span class="custom-control-description">Payment History</span>
+                                    </label>
+
+                                    <label class="custom-control custom-checkbox">
+                                        {{ Form::checkbox('content_page', null, old('content_page', $content_page ?? ''), array('id'=>'content_page', 'class'=> 'custom-control-input')) }}
+                                        <span class="custom-control-indicator"></span>
+                                        <span class="custom-control-description">Content</span>
+                                    </label>
+
+                                    <label class="custom-control custom-checkbox">
+                                        {{ Form::checkbox('utm_generator', null, old('utm_generator', $utm_generator ?? ''), array('id'=>'utm_generator', 'class'=> 'custom-control-input')) }}
+                                        <span class="custom-control-indicator"></span>
+                                        <span class="custom-control-description">Utm Generator</span>
+                                    </label>
                                 </div>
                             </div>
                         

@@ -34,6 +34,15 @@
 
                 </div>
             </li>  --}}
+            <li class="list-inline-item">
+                <span>{{ __('globals.common.balance') }}: </span>
+                <span id="span_balance" class="@if(session()->get('cur_balance') < 100) text-danger @else text-success @endif"
+                      style="cursor: pointer;"
+                      data-placement="bottom"
+                      data-trigger="hover"
+                      data-content="{{ __('globals.msg.balance_limit') }}">R$ {{ number_format(session()->get('cur_balance'), 2, '.', ',') }}</span>
+
+            </li>
 
             <li class="list-inline-item dropdown notification-list">
                 <a class="nav-link dropdown-toggle arrow-none waves-effect nav-user" data-toggle="dropdown" href="#" role="button"
@@ -45,10 +54,13 @@
                     /storage/{{  Auth::guard('admin')->user()->avatar }}
                     @endif
                     " alt="user" class="rounded-circle">
+                    <span>{{ Auth::guard('admin')->user()->name ?? '' }}<i class="mdi mdi-chevron-down"></i></span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right profile-dropdown ">
-                    <!--<a class="dropdown-item" href="#"><i class="mdi mdi-account-circle m-r-5 text-muted"></i> Profile</a>
-                    <a class="dropdown-item" href="#"><span class="badge badge-success pull-right">5</span><i class="mdi mdi-settings m-r-5 text-muted"></i> Settings</a>-->
+                    <a class="dropdown-item" href="{{ route('admin.profile', Auth::guard('admin')->user()->id) }}"><i class="fa fa-user-circle-o m-r-5 text-muted"></i> My Account</a>
+{{--                    @if(\DLW\Models\ClientDetail::where(['email' => Auth::guard('admin')->user()->email])->first())--}}
+{{--                    <a class="dropdown-item" href="{{ route('profile.client_details.show', urlencode(Auth::guard('admin')->user()->email)) }}"><i class="mdi mdi-settings m-r-5 text-muted"></i> Request Details</a>--}}
+{{--                    @endif--}}
                     <a class="dropdown-item" href="#" onclick="to_logout()"><i class="mdi mdi-logout m-r-5 text-muted"></i> Logout</a>
                       @push('scripts')
                         <script>

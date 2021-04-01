@@ -6,8 +6,8 @@ return [
     'port' => env('MAIL_PORT', 587),
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => 'CHOPARD PARFUMS',
+        'address' => env('MAIL_FROM_ADDRESS', 'smartpublisher@root.com'),
+        'name' => 'Smart Publisher',
     ],
 
     'encryption' => env('MAIL_ENCRYPTION', 'tls'),

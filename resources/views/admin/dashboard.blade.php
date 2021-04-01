@@ -8,16 +8,16 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <div class="m-b-10 list-inline float-right" id="dashdate" style="border-bottom: 1px solid;border-bottom-color: #aeaeae;cursor: pointer;">
+                <div class="m-b-10 list-inline float-right" id="dashdate">
                     <i class="fa fa-calendar"></i>&nbsp;
                     <span></span> <i class="fa fa-caret-down"></i>
                 </div>
-                Viewids:
-                <select class="minimal" id="selviewids" class="m-b-12 col-md-3 list-inline" style="margin-top:-20px;border:none;background-color: #fafafa;color: #292b2c">
-                    @if($cur_view_id == "0")    
-                        <option value="0" selected> All View Ids</option>
+                {{ __('globals.common.viewids') }}:
+                <select class="minimal" id="selviewids" class="m-b-12 col-md-3 list-inline">
+                    @if($cur_view_id == "0")
+                        <option value="0" selected> {{ __('globals.common.all_view_ids') }}</option>
                     @else
-                        <option value="0"> All View Ids</option>
+                        <option value="0"> {{ __('globals.common.all_view_ids') }}</option>
                     @endif
                     @foreach ($view_ids as $key => $val)
                         @if($val == $cur_view_id)
@@ -28,13 +28,12 @@
                     @endforeach
                 </select>
             </div>
-
             <div class="col-md-6 col-lg-6 col-xl-3">
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-currency-usd"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_spend_total">R$ 0</span>
-                        Total Spends
+                        <span class="counter" id="s_spend_total">R$ {{ $sum_spent }}</span>
+                        {{ __('globals.common.total_spends') }}
                     </div>
                 </div>
             </div>
@@ -42,8 +41,8 @@
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-cart-outline"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_rmax_total">R$ 0</span>
-                        Total Received Max
+                        <span class="counter" id="s_rmax_total">R$ {{ $sum_benefit }}</span>
+                        {{ __('globals.common.total_received_max') }}
                     </div>
                 </div>
             </div>
@@ -51,8 +50,8 @@
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-scale-balance"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_profit_total">R$ 0</span>
-                        Total Profit Max
+                        <span class="counter" id="s_profit_total">R$ {{ $sum_profit }}</span>
+                        {{ __('globals.common.total_profit_max') }}
                     </div>
                 </div>
             </div>
@@ -60,140 +59,99 @@
                 <div class="mini-stat clearfix bg-primary">
                     <span class="mini-stat-icon"><i class="mdi mdi-cube-outline"></i></span>
                     <div class="mini-stat-info text-right text-white">
-                        <span class="counter" id="s_roimax_total">0 %</span>
-                        ROI Max
+                        <span class="counter" id="s_roimax_total">{{ $sum_roi }} %</span>
+                        {{ __('globals.common.roi_max') }}
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="btm-tbl">
+        <div class="btm-tbl mt-2">
             <div class="card m-b-20">
-                <div class="card-block">
+                <div class="card-block effect8">
                     <!-- Nav tabs -->
                         <ul class="nav nav-tabs" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" data-toggle="tab" href="#tab-received-spend" role="tab">Received & Spend</a>
+                                <a class="nav-link active" data-toggle="tab" href="#tab-received-spend" role="tab">{{ __('globals.common.receive_spent') }}</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#tab-roi" role="tab">ROI</a>
+                                <a class="nav-link" data-toggle="tab" href="#tab-roi" role="tab">{{ __('globals.common.roi') }}</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#tab-profit" role="tab">Profit</a>
+                                <a class="nav-link" data-toggle="tab" href="#tab-profit" role="tab">{{ __('globals.common.profit') }}</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#tab-all-analysis" role="tab">All(Received, Spend, ROI, Profit)</a>
+                                <a class="nav-link" data-toggle="tab" href="#tab-all-analysis" role="tab">{{ __('globals.common.all_analysis') }}</a>
                             </li>
                         </ul>
 
                         <!-- Tab panes -->
                         <div class="tab-content">
                             <div class="tab-pane active p-3" id="tab-received-spend" role="tabpanel">
-                                <canvas id="chart-received-spend" height="120"></canvas>
+                                <div id="chart-received-spend" height="120"></div>
                             </div>
                             <div class="tab-pane p-3" id="tab-roi" role="tabpanel">
-                                <canvas id="chart-roi" height="120"></canvas>
+                                <div id="chart-roi" height="120"></div>
                             </div>
                             <div class="tab-pane p-3" id="tab-profit" role="tabpanel">
-                                <canvas id="chart-profit" height="120"></canvas>
+                                <div id="chart-profit" height="120"></div>
                             </div>
                             <div class="tab-pane p-3" id="tab-all-analysis" role="tabpanel">
-                                <canvas id="chart-all-analysis" height="120"></canvas>
+                                <div id="chart-all-analysis" height="120"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        {{--  <div class="container">
-            <div class="card m-b-20">
-                <div class="card-block">
-                    <h4 class="mt-0 m-b-15 header-title">All Analysis Collection</h4>
-                    <table id="datatable1" class="table table-bordered table-hover">
-                        <thead>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                        <tfoot>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>  --}}
     </div>
-
 </div>
 @endsection
 
 @push('css')
-    <link rel="stylesheet" href="{{ asset('assets/admin/plugins/morris/morris.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/admin/plugins/c3/c3.min.css') }}"/>
-    <link rel="stylesheet" href="{{ asset('assets/admin/plugins/chartist/css/chartist.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/admin/plugins/datatables/dataTables.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/admin/plugins/datatables/buttons.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/admin/plugins/datatables/responsive.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/admin/plugins/jvectormap/jquery-jvectormap-2.0.2.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css"/>
+    <link href="{{ asset('assets/admin/css/main.css') }}" rel="stylesheet" type="text/css" />
+    <!-- Datarangepicker css -->
+    <link href="{{ asset('assets/admin/plugins/datarangepicker/daterangepicker.css') }}" rel="stylesheet" type="text/css"/>
+    <!-- Toastr css -->
     <link href="{{ asset('assets/admin/plugins/toastr/toastr.min.css') }}" rel="stylesheet" type="text/css" />
+
+    <style>
+        .daterangepicker.opensright:before {
+            right:34px;
+            left: unset;
+        }
+        .daterangepicker.opensright:after
+        {
+            right:35px;
+            left: unset;
+        }
+        #dashdate
+        {
+            border-bottom: 1px solid;
+            border-bottom-color: #aeaeae;
+            cursor: pointer;
+        }
+        #selviewids
+        {
+            margin-top:-20px;
+            border:none;
+            background-color: #fafafa;
+            color: #292b2c
+        }
+
     </style>
 @endpush
- 
+
 @push('scripts')
-    <script src="{{ asset('assets/admin/plugins/morris/morris.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/raphael/raphael-min.js') }}"></script>
-
-    <script src="{{ asset('assets/admin/plugins/flot-chart/jquery.flot.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/flot-chart/jquery.flot.time.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/flot-chart/jquery.flot.tooltip.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/flot-chart/jquery.flot.resize.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/flot-chart/jquery.flot.pie.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/flot-chart/jquery.flot.selection.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/flot-chart/jquery.flot.stack.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/flot-chart/curvedLines.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/flot-chart/jquery.flot.crosshair.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/chart.js/chart.min.js') }}"></script>
-
-    <script src="{{ asset('assets/admin/plugins/jvectormap/jquery-jvectormap-2.0.2.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/jvectormap/jquery-jvectormap-world-mill-en.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/jvectormap/gdp-data.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/jvectormap/jquery-jvectormap-us-aea-en.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/jvectormap/jquery-jvectormap-uk-mill-en.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/jvectormap/jquery-jvectormap-us-il-chicago-mill-en.js') }}"></script>
-
-    <script src="{{ asset('assets/admin/plugins/d3/d3.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/c3/c3.min.js') }}"></script>
-
-    <script src="{{ asset('assets/admin/plugins/chartist/js/chartist.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/chartist/js/chartist-plugin-tooltip.min.js') }}"></script>
-
-    <script src="{{ asset('assets/admin/plugins/datatables/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
-
-    <!-- Buttons examples -->
-    <script src="{{ asset('assets/admin/plugins/datatables/dataTables.buttons.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/datatables/buttons.bootstrap4.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/datatables/jszip.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/datatables/pdfmake.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/datatables/vfs_fonts.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/datatables/buttons.html5.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/datatables/buttons.print.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/datatables/buttons.colVis.min.js') }}"></script>
-
-    <!-- Responsive examples -->
-    <script src="{{ asset('assets/admin/plugins/datatables/dataTables.responsive.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
-
-    <!-- Date Range Picker Js -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-
-    <!-- Toastr Alert Js -->
+    <!--  Apex chart JS Library -->
+    <script src="{{ asset('assets/admin/plugins/apexcharts/apexcharts.min.js') }}"></script>
+    <!-- Toastr Library js -->
     <script src="{{ asset('assets/admin/plugins/toastr/toastr.min.js') }}"></script>
-  
-<script>
+    <!-- Date Range Picker Js -->
+    <script src="{{ asset('assets/admin/plugins/datarangepicker/moment.min.js') }}"></script>
+    <script src="{{ asset('assets/admin/plugins/datarangepicker/daterangepicker.min.js') }}"></script>
+    <script>
         $(function() {
-
             var start = new Date("{{ $rep_start_date }}".replace( /(\d{4})-(\d{2})-(\d{2})/, "$1/$2/$3"));
             start = moment(start);
             var end = new Date("{{ $rep_end_date }}".replace( /(\d{4})-(\d{2})-(\d{2})/, "$1/$2/$3"));
@@ -207,14 +165,13 @@
                 end_date = cend.format('YYYY-MM-DD');
                 start = cstart;
                 end = cend;
-                let cur_view_id = $('#selviewids').val();
+
                 $.ajax({
                     url: "{{ route('dashboard.changedate') }}",
                     type : "POST",
-                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
                     data : {
                         startDate:start_date,
-                        endDate:end_date   
+                        endDate:end_date
                     },
                     success : function(res) {
                         location.href = "{{ route('dashboard') }}";
@@ -223,9 +180,7 @@
                         toastr.error("Data loading error!", "Error");
                         $.unblockUI();
                     }
-                });   
-
-                //getTotalValues(start_date, end_date);
+                });
             }
 
             $('#dashdate').daterangepicker({
@@ -233,7 +188,7 @@
                 endDate: end,
                 showDropdowns: false,
                 linkedCalendars: true,
-                maxDate: moment().format('MM/DD/YYYY'), 
+                maxDate: moment().format('MM/DD/YYYY'),
                 minDate: moment().subtract(2, 'years').format('MM/DD/YYYY'),
                 ranges: {
                 'Today': [moment(), moment()],
@@ -251,26 +206,23 @@
                 $.ajax({
                     url: "{{ route('dashboard.changeallviewid') }}",
                     type : "POST",
-                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
                     data : {
                         cur_all_view_id: cur_view_id
                     },
                     success : function(res) {
-                        console.log(res);
                         location.href = "{{ route('dashboard') }}";
                     },
                     error: function (request, status, error) {
                         toastr.error("Data loading error!", "Error");
                         $.unblockUI();
                     }
-                });   
+                });
             });
         });
 
         function getTotalValues(startDate, endDate)
         {
             blockUI();
-
             $.ajax({
                 url: "{{ route('dashboard.gettotal') }}",
                 type : "POST",
@@ -280,15 +232,6 @@
                     endDate:endDate
                 },
                 success : function(res) {
-                    //$('#datatable1').DataTable().destroy();
-                    //$('#datatable1').DataTable({
-                    //    "scrollY": '60vh',
-                    //    "scrollCollapse": true,
-                    //    "order": [[ 1, "desc" ]],
-                    //    "searching": false, 
-                    //    "info": false
-                    //});
-                    
                     if(res.status === false)
                     {
                         $('#s_spend_total').text('R$ 0');
@@ -310,211 +253,309 @@
                 }
             });
         }
-    
-        // Analysis  Chart
-        new Chart(document.getElementById("chart-received-spend"), {
-            type: 'line',
-            data: {
-                labels: [
-                    <?php
-                    foreach ($g_benefit as $key => $row){
-                        if(session('rep_start_date') == session('rep_end_date'))
-                            echo "\"".$key."h"."\",";
-                        else
-                        echo "\"".$key."\",";
-                    }
-                    reset($g_benefit);
-                    ?>
-                ],
-                datasets: [
-                    { 
-                        data: [ 
-                            <?php
-                                foreach ($g_benefit as $row){
-                                    echo $row.",";
-                                }
-                            ?>
-                        ],
-                        label: "Received(R$)",
-                        borderColor: "#FFF200",
-                        fill: false,
-                    },
-                    { 
-                        data: [ 
-                            <?php
-                                foreach ($t_spent as $row){
-                                    echo $row.",";
-                                }
-                            ?>
-                        ],
-                        label: "Spent(R$)",
-                        borderColor: "#000000",
-                        fill: false,
-                    }
-                ]
-            },
-            options: {
-                title: {
-                    display: true,
-                },
-                responsive: true,
-            }
-        });
 
-
-        new Chart(document.getElementById("chart-roi"), {
-            type: 'line',
-            data: {
-                labels: [
-                    <?php
-                    foreach ($roi as $key => $row){
-                        if(session('rep_start_date') == session('rep_end_date'))
-                            echo "\"".$key."h"."\",";
-                        else
-                        echo "\"".$key."\",";
-                    }
-                    reset($roi);
-                    ?>
-                ],
-                datasets: [
-                    { 
-                        data: [ 
-                            <?php
-                                foreach ($roi as $row){
-                                    echo $row.",";
-                                }
-                            ?>
-                        ],
-                        label: "Roi(%)",
-                        borderColor: "red",
-                        fill: false,
-                    }
-                ]
-            },
-            options: {
-                title: {
-                    display: true,
-                },
-                responsive: true,
-            }
-        });
-
-        new Chart(document.getElementById("chart-profit"), {
-            type: 'line',
-            data: {
-                labels: [
-                    <?php
-                    foreach ($profit as $key => $row){
-                        if(session('rep_start_date') == session('rep_end_date'))
-                            echo "\"".$key."h"."\",";
-                        else
-                        echo "\"".$key."\",";
-                    }
-                    reset($profit);
-                    ?>
-                ],
-                datasets: [
-                    { 
-                        data: [ 
-                            <?php
-                                foreach ($profit as $row){
-                                    echo $row.",";
-                                }
-                            ?>
-                        ],
-                        label: "Profit(R$)",
-                        borderColor: "#7F7F7F",
-                        fill: false,
-                    }
-                ]
-            },
-            options: {
-                title: {
-                    display: true,
-                },
-                responsive: true,
-            }
-        });
-
-        new Chart(document.getElementById("chart-all-analysis"), {
-            type: 'line',
-            data: {
-                labels: [
-                    <?php
-                    foreach ($g_benefit as $key => $row){
-                        if(session('rep_start_date') == session('rep_end_date'))
-                            echo "\"".$key."h"."\",";
-                        else
-                        echo "\"".$key."\",";
-                    }
-                    reset($g_benefit);
-                    ?>
-                ],
-                datasets: [
-                    { 
-                        data: [ 
-                            <?php
-                                foreach ($g_benefit as $row){
-                                    echo $row.",";
-                                }
-                            ?>
-                        ],
-                        label: "Received(R$)",
-                        borderColor: "#FFF200",
-                        fill: false,
-                    },
-                    { 
-                        data: [
-                            <?php
-                                foreach ($t_spent as $row){
-                                    echo $row.",";
-                                }
-                            ?>
-                        ],
-                        label: "Spent(R$)",
-                        borderColor: "#000000",
-                        fill: false,
-                    },
-                    { 
-                        data: [ 
-                            <?php
-                                foreach ($roi as $row){
-                                    echo $row.",";
-                                }
-                            ?>
-                        ],
-                        label: "Roi(%)",
-                        borderColor: "red",
-                        fill: false,
-                    },
-                    { 
-                        data: [ 
-                            <?php
-                                foreach ($profit as $row){
-                                    echo $row.",";
-                                }
-                            ?>
-                        ],
-                        label: "Profit(R$)",
-                        borderColor: "#7F7F7F",
-                        fill: false,
-                    }
-                ]
-            },
-            options: {
-                title: {
-                    display: true,
-                },
-                responsive: true,
-            }
-        });
-
-    // Start datatables.init.js
         $(document).ready(function() {
-            getTotalValues("{{ $rep_start_date }}", "{{ $rep_end_date }}");
-        } );
-        
-    // End
-    
+            //Init total values//
+            //getTotalValues("{{ $rep_start_date }}", "{{ $rep_end_date }}");
+            //Apex Chart rendering//
+
+            let colors = ["#00E396", "#000000"];
+
+            let data_recevie = [
+                @foreach($send_val as $key=>$val)
+                    '{{ $val['total_recevie'] }}',
+                @endforeach
+            ];
+
+            let data_spent = [
+                @foreach($send_val as $key=>$val)
+                    '{{ $val['total_spent'] }}',
+                @endforeach
+            ];
+
+            let data_profit = [
+                @foreach($send_val as $key=>$val)
+                    '{{ $val['total_profit'] }}',
+                @endforeach
+            ];
+
+            let data_roi = [
+                @foreach($send_val as $key=>$val)
+                    '{{ $val['total_roi'] }}',
+                @endforeach
+            ];
+
+            let labels = [
+                @foreach($send_val as $key=>$val)
+                    '{{ $key }}',
+                @endforeach
+            ];
+
+            let options = {
+                series: [
+                    {
+                        name: "{{ __('globals.common.received') }} (R$)",
+                        type: "line",
+                        data: data_recevie,
+                    },
+                    {
+                        name: "{{ __('globals.common.spent') }} (R$)",
+                        type: "line",
+                        data: data_spent,
+                    }
+                ],
+                chart: {
+                    height: 420,
+                    type: "line"
+                },
+                stroke: {
+                    width: [2,2]
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: "50%"
+                    }
+                },
+                colors: colors,
+                dataLabels: {
+                    enabled: !0,
+                    enabledOnSeries: [0,1]
+                },
+                labels: labels,
+                xaxis: {
+                    type: "datetime"
+                },
+                legend: {
+                    offsetY: 7
+                },
+                grid: {
+                    padding: {
+                        bottom: 20,
+                        left: 30
+                    }
+                },
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shade: "light",
+                        type: "horizontal",
+                        shadeIntensity: .25,
+                        gradientToColors: 0,
+                        inverseColors: !0,
+                        opacityFrom: .75,
+                        opacityTo: .75,
+                        stops: [0, 0, 0]
+                    }
+                },
+                yaxis: [{
+                    title: {
+                        text: "{{ __('globals.common.received') }} & {{ __('globals.common.spent') }} (R$)"
+                    }
+                }]
+            };
+            let apexChart = new ApexCharts(document.querySelector('#chart-received-spend'), options);
+            apexChart.render();
+
+            colors = ["#E50000"];
+
+            let options_roi = {
+                series: [
+                    {
+                        name: "{{ __('globals.common.roi_max') }} (R$)",
+                        type: "line",
+                        data: data_roi,
+                    },
+                ],
+                chart: {
+                    height: 420,
+                    type: "line"
+                },
+                stroke: {
+                    width: [2,2]
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: "50%"
+                    }
+                },
+                colors: colors,
+                dataLabels: {
+                    enabled: !0,
+                    enabledOnSeries: [0]
+                },
+                labels: labels,
+                xaxis: {
+                    type: "datetime"
+                },
+                legend: {
+                    offsetY: 7
+                },
+                grid: {
+                    padding: {
+                        bottom: 20,
+                        left: 30
+                    }
+                },
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shade: "light",
+                        type: "horizontal",
+                        shadeIntensity: .25,
+                        gradientToColors: 0,
+                        inverseColors: !0,
+                        opacityFrom: .75,
+                        opacityTo: .75,
+                        stops: [0, 0, 0]
+                    }
+                },
+                yaxis: [{
+                    title: {
+                        text: "{{ __('globals.common.roi_max') }} (R$)"
+                    }
+                }]
+            };
+            let apexChartRoi = new ApexCharts(document.querySelector('#chart-roi'), options_roi);
+            apexChartRoi.render();
+
+            colors = ["#727272"];
+
+            let options_profit = {
+                series: [
+                    {
+                        name: "{{ __('globals.common.profit') }} (%)",
+                        type: "line",
+                        data: data_profit,
+                    },
+                ],
+                chart: {
+                    height: 420,
+                    type: "line"
+                },
+                stroke: {
+                    width: [2,2]
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: "50%"
+                    }
+                },
+                colors: colors,
+                dataLabels: {
+                    enabled: !0,
+                    enabledOnSeries: [0]
+                },
+                labels: labels,
+                xaxis: {
+                    type: "datetime"
+                },
+                legend: {
+                    offsetY: 7
+                },
+                grid: {
+                    padding: {
+                        bottom: 20,
+                        left: 30
+                    }
+                },
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shade: "light",
+                        type: "horizontal",
+                        shadeIntensity: .25,
+                        gradientToColors: 0,
+                        inverseColors: !0,
+                        opacityFrom: .75,
+                        opacityTo: .75,
+                        stops: [0, 0, 0]
+                    }
+                },
+                yaxis: [{
+                    title: {
+                        text: "{{ __('globals.common.profit') }} (R$)"
+                    }
+                }]
+            };
+            let apexChartProfit = new ApexCharts(document.querySelector('#chart-profit'), options_profit);
+            apexChartProfit.render();
+
+            colors = ["#00E396", "#000000", "#E50000", "#727272"];
+
+            let options_all = {
+                series: [
+                    {
+                        name: "{{ __('globals.common.received') }} (R$)",
+                        type: "line",
+                        data: data_recevie,
+                    },
+                    {
+                        name: "{{ __('globals.common.spent') }} (R$)",
+                        type: "line",
+                        data: data_spent,
+                    },
+                    {
+                        name: "{{ __('globals.common.roi_max') }} (%)",
+                        type: "line",
+                        data: data_roi,
+                    },
+                    {
+                        name: "{{ __('globals.common.profit') }} (R$)",
+                        type: "line",
+                        data: data_profit,
+                    }
+                ],
+                chart: {
+                    height: 420,
+                    type: "line"
+                },
+                stroke: {
+                    width: [2,2,2,2]
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: "50%"
+                    }
+                },
+                colors: colors,
+                dataLabels: {
+                    enabled: !0,
+                    enabledOnSeries: [0,1,2,3]
+                },
+                labels: labels,
+                xaxis: {
+                    type: "datetime"
+                },
+                legend: {
+                    offsetY: 7
+                },
+                grid: {
+                    padding: {
+                        bottom: 20,
+                        left: 30
+                    }
+                },
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shade: "light",
+                        type: "horizontal",
+                        shadeIntensity: .25,
+                        gradientToColors: 0,
+                        inverseColors: !0,
+                        opacityFrom: .75,
+                        opacityTo: .75,
+                        stops: [0, 0, 0]
+                    }
+                },
+                yaxis: [{
+                    title: {
+                        text: "{{ __('globals.common.all_analysis') }}"
+                    }
+                }]
+            };
+            let apexChartAll = new ApexCharts(document.querySelector('#chart-all-analysis'), options_all);
+            apexChartAll.render();
+        });
     </script>
 @endpush

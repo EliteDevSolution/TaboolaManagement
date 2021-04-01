@@ -17,8 +17,8 @@ class Currency extends Migration
            $table->increments('id');
            $table->integer('admin_id');
            $table->unsignedInteger('type');
-           $table->float('min_value', 8,2)->nullable();
-           $table->float('max_value', 8,2)->nullable();
+           $table->float('min_value', 8,2)->default(4.2);
+           $table->float('max_value', 8,2)->default(4.2);
            $table->string('update_at');
        });
     }

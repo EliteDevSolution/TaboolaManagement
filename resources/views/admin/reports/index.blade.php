@@ -1,41 +1,38 @@
 @extends('admin.layout')
-
 @section('content')
-
 @include('admin.partials.top-bar')
-<div class="page-content-wrapper ">
+
+<div class="page-content-wrapper">
     <div class="container">
         <div class="row">
             <div class="col-12">
-                    Currency: 
-                    <select class="minimal" id="selcurrency" class="m-b-10 col-md-1 list-inline" style="border:none;background-color: #fafafa;color: #292b2c">
-                        @foreach ($currencies as $val)
-                            @if($val == $curcurrency)
-                                <option value="{{ $val }}" selected>{{ $val }}</option>
-                            @else
-                                <option value="{{ $val }}">{{ $val }}</option>
-                            @endif
-                        @endforeach
-                    </select>
-                    <div class="m-b-10 list-inline float-right" id="reportrange" style="border-bottom: 1px solid;border-bottom-color: #aeaeae;cursor: pointer;">
-                        <i class="fa fa-calendar"></i>&nbsp;
-                        <span></span> <i class="fa fa-caret-down"></i>
-                    </div>
-                    <span class="ml-3"></span>
-                    Viewids: 
-                    <select class="minimal" id="selviewids" class="m-b-10 col-md-3 list-inline" style="border:none;background-color: #fafafa;color: #292b2c">
-                        @foreach ($view_ids as $key => $val)
-                            @if($val == $cur_view_id)
-                                <option value="{{ $val }}" selected>{{ $val }} ( {{ 'https://'.$view_id_urls[$key] }} )</option>
-                            @else
-                                <option value="{{ $val }}">{{ $val }} ( {{ 'https://'.$view_id_urls[$key] }} )</option>
-                            @endif
-                        @endforeach
-                    </select>
+                Currency:
+                <select class="minimal" id="selcurrency" class="m-b-10 col-md-1 list-inline" style="border:none;background-color: #fafafa;color: #292b2c">
+                    @foreach ($currencies as $val)
+                        @if($val == $curcurrency)
+                            <option value="{{ $val }}" selected>{{ $val }}</option>
+                        @else
+                            <option value="{{ $val }}">{{ $val }}</option>
+                        @endif
+                    @endforeach
+                </select>
+                <div class="m-b-10 list-inline float-right" id="reportrange" style="border-bottom: 1px solid;border-bottom-color: #aeaeae;cursor: pointer;">
+                    <i class="fa fa-calendar"></i>&nbsp;
+                    <span></span> <i class="fa fa-caret-down"></i>
+                </div>
+                <span class="ml-3"></span>
+                Viewids:
+                <select class="minimal" id="selviewids" class="m-b-10 col-md-3 list-inline" style="border:none;background-color: #fafafa;color: #292b2c">
+                    @foreach ($view_ids as $key => $val)
+                        @if($val == $cur_view_id)
+                            <option value="{{ $val }}" selected>{{ $val }} ( {{ 'https://'.$view_id_urls[$key] }} )</option>
+                        @else
+                            <option value="{{ $val }}">{{ $val }} ( {{ 'https://'.$view_id_urls[$key] }} )</option>
+                        @endif
+                    @endforeach
+                </select>
             </div>
-
-            <div class="row">
-                <div class="col-xl-6">
+                <div class="col-md-6">
                     <div class="card m-b-20">
                         <div class="card-block">
                             <!-- Nav tabs -->
@@ -53,7 +50,7 @@
                                     <a class="nav-link" data-toggle="tab" href="#tab-sessionduration" role="tab">Session Duration</a>
                                 </li>
                             </ul>
-    
+
                             <!-- Tab panes -->
                             <div class="tab-content">
                                 <div class="tab-pane active p-3" id="tab-users" role="tabpanel">
@@ -72,8 +69,8 @@
                         </div>
                     </div>
                 </div>
-    
-                <div class="col-xl-3">
+
+                <div class="col-md-3">
                     <div class="card m-b-20" style="background-color: #67a8e4; color: #fff; height: 431.5px;">
                         <div class="card-block">
                             <h4 class="mt-0 header-title">Active Users right now</h4>
@@ -87,7 +84,7 @@
                                                 <p style="margin: 0;white-space: nowrap;">{{ substr($page[0],0,15) }}...{{substr($page[0],-10)}}</p>
                                             @else
                                                 <p style="margin: 0;white-space: nowrap;">{{ $page[0] }}</p>
-                                            @endif 
+                                            @endif
                                         @endforeach
                                         @php
                                             reset($activepages);
@@ -106,11 +103,12 @@
                         </div>
                     </div>
                 </div>
-    
-                <div class="col-xl-3">
+
+                <div class="col-md-3">
                     <div class="card m-b-20" style="">
                         <div class="card-block">
-                            <h4 class="mt-0 header-title">More users returned to your site in 
+                            <h4 class="mt-0 header-title">More users returned to your site in
+                            @if(sizeof($return_users) > 0)
                             <?php
                                 array_pop($return_users);
                                 $users_latestMonth = $return_users[sizeof($return_users)-1][1];
@@ -123,12 +121,13 @@
                             ?>
                             </h4>
                             <p style="font-size: 14px;">You had {{ $users_latestMonth }} users, {{ $users_latestMonth - $newUser_latestMonth }} came back in {{ $letter_latestMonth }}, which means {{ $return_users_latestMonth }}% of your users returned to your site.</p>
+                            @endif
                             <div><canvas id="bar" height="300"></canvas></div>
                         </div>
                     </div>
                 </div>
-    
-                <div class="col-lg-9">
+
+                <div class="col-md-9">
                     <div class="card m-b-20">
                         <div class="card-block">
                             <p class="text-muted m-b-30 font-14">Sessions by country</p>
@@ -143,8 +142,8 @@
                         </div>
                     </div>
                 </div>
-    
-                <div class="col-xl-3">
+
+                <div class="col-md-3">
                     <div class="card m-b-20">
                         <div class="card-block">
                             <p class="text-muted m-b-30 font-14">What are your top devices ?</p>
@@ -153,61 +152,114 @@
                                 <li>
                                     <i class="mdi mdi-desktop-mac"></i>
                                     <p class="text-muted m-b-0">Desktop</p>
-                                    <h4 class=""><b>{{ round( $topdevices[0][1] / ( $topdevices[0][1] + $topdevices[1][1] + $topdevices[2][1] ) * 100, 1 ) }}%</b></h4>
+                                    <h4 class=""><b>{{ round( $topdevices[0][1] / $total_devices * 100, 1 ) }}%</b></h4>
                                 </li>
                                 <li>
                                     <i class="mdi mdi-cellphone-iphone"></i>
                                     <p class="text-muted m-b-0">Mobile</p>
-                                    <h4 class=""><b>{{ round( $topdevices[1][1] / ( $topdevices[0][1] + $topdevices[1][1] + $topdevices[2][1] ) * 100, 1 ) }}%</b></h4>
+                                    <h4 class=""><b>{{ round( $topdevices[1][1] / $total_devices * 100, 1 ) }}%</b></h4>
                                 </li>
                                 <li>
                                     <i class="mdi mdi-tablet"></i>
                                     <p class="text-muted m-b-0">Tablet</p>
-                                    <h4 class=""><b>{{ round( $topdevices[2][1] / ( $topdevices[0][1] + $topdevices[1][1] + $topdevices[2][1] ) * 100, 1 ) }}%</b></h4>
+                                    <h4 class=""><b>{{ round( $topdevices[2][1] / $total_devices * 100, 1 ) }}%</b></h4>
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </div>
-            
-                <div class="col-xl-12 btm-tbl">
+
+                <div class="col-md-12 btm-tbl">
                     <div class="card m-b-20">
                         <div class="card-block">
                             <h4 class="mt-0 header-title">AdSense Campaign Data</h4>
-                                <table id="datatable_data" class="table table-bordered table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Souce</th>
-                                            <th id="adsenserev">AdSense Revenue({{ $curcurrency }})</th>
-                                            <th>AdSense Ads Clicked</th>
-                                            <th>AdSense Page Impressions</th>
-                                            <th>AdSense CTR</th>
-                                            <th id="adsensecpm">AdSense eCPM({{ $curcurrency }})</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <th></th>
-                                            <th>Total</th>
-                                            <th id="total_1"></th>
-                                            <th id="total_2"></th>
-                                            <th id="total_3"></th>
-                                            <th id="total_4"></th>
-                                            <th id="total_5"></th>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                            <table id="datatable_data" class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Souce</th>
+                                        <th>Users</th>
+                                        <th>Bounce Rate</th>
+                                        <th>Pages/Session</th>
+                                        <th>Avg. Session Duration</th>
+                                        <th id="adsenserev">AdSense Revenue({{ $curcurrency }})</th>
+                                        <th>AdSense Ads Clicked</th>
+                                        <th>AdSense Page Impressions</th>
+                                        <th>AdSense CTR</th>
+                                        <th id="adsensecpm">AdSense eCPM({{ $curcurrency }})</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th></th>
+                                        <th>Total</th>
+                                        <th id="total_1"></th>
+                                        <th id="total_2"></th>
+                                        <th id="total_3"></th>
+                                        <th id="total_4"></th>
+                                        <th id="total_5"></th>
+                                        <th id="total_6"></th>
+                                        <th id="total_7"></th>
+                                        <th id="total_8"></th>
+                                        <th id="total_9"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="modal_title" aria-hidden="true" id="site_show_modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title mt-0" id="modal_title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                </div>
+                <div class="modal-body">
+                    <table id="datatable_site_data" class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Souce</th>
+                                <th>Users</th>
+                                <th>Bounce Rate</th>
+                                <th>Pages/Session</th>
+                                <th>Avg. Session Duration</th>
+                                <th id="site_adsenserev">AdSense Revenue({{ $curcurrency }})</th>
+                                <th>AdSense Ads Clicked</th>
+                                <th>AdSense Page Impressions</th>
+                                <th>AdSense CTR</th>
+                                <th id="site_adsensecpm">AdSense eCPM({{ $curcurrency }})</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal_tbody">
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>Total</th>
+                                <th id="site_total_1"></th>
+                                <th id="site_total_2"></th>
+                                <th id="site_total_3"></th>
+                                <th id="site_total_4"></th>
+                                <th id="site_total_5"></th>
+                                <th id="site_total_6"></th>
+                                <th id="site_total_7"></th>
+                                <th id="site_total_8"></th>
+                                <th id="site_total_9"></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 </div>
-
 @endsection
 
 @push('css')
@@ -218,11 +270,58 @@
     <link rel="stylesheet" href="{{ asset('assets/admin/plugins/datatables/buttons.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/plugins/datatables/responsive.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/plugins/jvectormap/jquery-jvectormap-2.0.2.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css"/>
     <link href="{{ asset('assets/admin/plugins/toastr/toastr.min.css') }}" rel="stylesheet" type="text/css" />
+    <!-- Datarangepicker css -->
+    <link href="{{ asset('assets/admin/plugins/datarangepicker/daterangepicker.css') }}" rel="stylesheet" type="text/css"/>
+    <style>
+        #datatable_data tbody tr:hover {
+            background-color: #a9e1fc;
+            cursor: pointer;
+        }
+
+        .modal-lg
+        {
+            max-width: 80% !important;
+        }
+
+        .daterangepicker.opensright:before {
+            right:34px;
+            left: unset;
+        }
+        .daterangepicker.opensright:after
+        {
+            right:35px;
+            left: unset;
+        }
+        .dt-button.buttons-columnVisibility:nth-child(0)
+        {
+            display: none;
+        }
+        .dt-button.buttons-columnVisibility:nth-child(1)
+        {
+            display: none;
+        }
+
+        .dt-button-collection
+        {
+            z-index: 99999 !important;
+        }
+
+        @media only screen and (max-width: 1045px) {
+            .dt-buttons.btn-group
+            {
+                display: none;
+            }
+        }
+
+        @media only screen and (max-width: 550px) {
+            .modal-lg
+            {
+                max-width: 100% !important;
+            }
+        }
     </style>
 @endpush
-
 @push('scripts')
     <script src="{{ asset('assets/admin/plugins/morris/morris.min.js') }}"></script>
     <script src="{{ asset('assets/admin/plugins/raphael/raphael-min.js') }}"></script>
@@ -269,15 +368,15 @@
     <script src="{{ asset('assets/admin/plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
 
     <!-- Date Range Picker Js -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script type="text/javascript" src="{{ asset('assets/admin/plugins/datarangepicker/moment.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('assets/admin/plugins/datarangepicker/daterangepicker.min.js') }}"></script>
 
     <!-- Toastr Alert Js -->
-    <script src="{{ asset('assets/admin/plugins/toastr/toastr.min.js') }}"></script>    
+    <script src="{{ asset('assets/admin/plugins/toastr/toastr.min.js') }}"></script>
 
     <script>
         let baseUrl = "{{ url('/') }}";
-    
+
         $(function() {
 
             var start = new Date("{{ $rep_start_date }}".replace( /(\d{4})-(\d{2})-(\d{2})/, "$1/$2/$3"));
@@ -299,21 +398,32 @@
                     "processing": true,
                     "serverSide": true,
                     "scrollY": '60vh',
+                    "scrollX": true,
                     "scrollCollapse": true,
                     "dom": 'Bfrtip',
                     "lengthMenu": [
                         [ 10, 50, 100, 500, 1000],
                         [ '10', '50', '100', '500', '1000' ]
                     ],
+                    "columnDefs": [ {
+                        targets: 1,
+                        render: function ( data, type, row ) {
+                            return data.length > 50 ?
+                                data.substr( 0, 50 ) +'…' :
+                                data;
+                        }
+                    } ],
                     "buttons": [
-                        'pageLength', 
+                        'pageLength',
                         {
                             "extend": 'collection',
                             "text": 'Export',
                             "buttons": [ 'copy', 'csv', 'excel', 'pdf', 'print' ],
                             "fade": true
                         },
+                        @if(sizeof(session('permissions')) > 0 && session('permissions')['column_visibility'] == 1)
                         'colvis',
+                        @endif
                     ],
                     "ajax": {
                         url: "{{ url('admin/getanalysisjson') }}",
@@ -322,11 +432,15 @@
                     "columns": [
                         { data: '0', name: 'ga:adContent'},
                         { data: '1', name: 'ga:source'},
-                        { data: '2', name: 'ga:adsenseRevenue'},
-                        { data: '3', name: 'ga:adsenseAdsClicks'},
-                        { data: '4', name: 'ga:adsensePageImpressions'},
-                        { data: '5', name: 'ga:adsenseCTR'},
-                        { data: '6', name: 'ga:adsenseECPM'},
+                        { data: '2', name: 'ga:users'},
+                        { data: '3', name: 'ga:bounceRate'},
+                        { data: '4', name: 'ga:sessions'},
+                        { data: '5', name: 'ga:avgSessionDuration'},
+                        { data: '6', name: 'ga:adsenseRevenue'},
+                        { data: '7', name: 'ga:adsenseAdsClicks'},
+                        { data: '8', name: 'ga:adsensePageImpressions'},
+                        { data: '9', name: 'ga:adsenseCTR'},
+                        { data: '10', name: 'ga:adsenseECPM'},
                         ],
                     "order": [[ 2, "asc" ]],
                     drawCallback:function(settings)
@@ -343,6 +457,7 @@
                     }
                 });
 
+
                 // Grab the datatables input box and alter how it is bound to events
                 $(".dataTables_filter input")
                 .unbind() // Unbind previous default bindings
@@ -352,7 +467,7 @@
                         // Call the API search function
                         dtable.search(this.value).draw();
                     }
-                    return;
+                    return true;
                 });
 
                 $(".dataTables_filter input").on('input', function(e)
@@ -360,7 +475,7 @@
                     if(this.value == "") {
                         dtable.search("").draw();
                     }
-                    return;
+                    return true;
                 });
 
                 start = cstart;
@@ -372,7 +487,7 @@
                 endDate: end,
                 showDropdowns: false,
                 linkedCalendars: true,
-                maxDate: moment().format('MM/DD/YYYY'), 
+                maxDate: moment().format('MM/DD/YYYY'),
                 minDate: moment().subtract(2, 'years').format('MM/DD/YYYY'),
                 ranges: {
                 'Today': [moment(), moment()],
@@ -384,11 +499,106 @@
                 }
             }, cb);
 
-            
+            $('#datatable_data tbody').on('click', 'tr', function(evt)
+            {
+                let cmpid = $(this).find('td').first().text();
+                let modal_title = $(this).find('td').eq(1).text();
+                $('#modal_title').text(`${modal_title} (${cmpid}) Site Data`);
+                $('#datatable_site_data').DataTable().destroy();
+                $('#modal_tbody').empty();
+                let site_dtable = $('#datatable_site_data').DataTable( {
+                    "stateSave": true,
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [
+                        [ 10, 50, 100, 500, 1000],
+                        [ '10', '50', '100', '500', '1000' ]
+                    ],
+                    dom: 'Bfrtip',
+                    "buttons": [
+                        'pageLength',
+                        'copy', 'csv', 'excel', 'pdf', 'print',
+                    ],
+                    "scrollY": '40vh',
+                    "scrollX": true,
+                    "scrollCollapse": true,
+                    "columnDefs": [ {
+                        targets: 0,
+                        visible: false,
+                    },{
+                        targets: 1,
+                        render: function ( data, type, row ) {
+                            return data.length > 50 ?
+                                data.substr( 0, 50 ) +'…' :
+                                data;
+                        }
+                    } ],
+                    "ajax": {
+                        url: "{{ route('analysis.sitejson') }}",
+                        data: { 'start_date':start_date, 'end_date':end_date, 'currency': currency, 'curviewid': curviewid, 'cmpid': cmpid}
+                    },
+                    "columns": [
+                        { data: '0', name: 'ga:adContent'},
+                        { data: '1', name: 'ga:source'},
+                        { data: '2', name: 'ga:users'},
+                        { data: '3', name: 'ga:bounceRate'},
+                        { data: '4', name: 'ga:sessions'},
+                        { data: '5', name: 'ga:avgSessionDuration'},
+                        { data: '6', name: 'ga:adsenseRevenue'},
+                        { data: '7', name: 'ga:adsenseAdsClicks'},
+                        { data: '8', name: 'ga:adsensePageImpressions'},
+                        { data: '9', name: 'ga:adsenseCTR'},
+                        { data: '10', name: 'ga:adsenseECPM'},
+                    ],
+                    "order": [[ 2, "asc" ]],
+                    drawCallback:function(settings)
+                    {
+                        let theadTag = $('table#datatable_site_data').find('thead')[0];
+                        if($(theadTag).next().prop("tagName") == 'TFOOT') $(theadTag).next().remove();
+                        let resTotal = settings.json.total;
+                        let index = 0;
+                        $.each(resTotal, function(key, data)
+                        {
+                            index ++;
+                            $('th#site_total_' + index).text(data);
+                        });
+                    }
+                });
+
+                $(".dataTables_filter input")
+                    .unbind() // Unbind previous default bindings
+                    .bind("keydown", function(e) { // Bind our desired behavior
+                        // If the length is 3 or more characters, or the user pressed ENTER, search
+                        if(e.keyCode == 13 && this.value != "") {
+                            // Call the API search function
+                            site_dtable.search(this.value).draw();
+                        }
+                        return true;
+                    });
+
+                $(".dataTables_filter input").on('input', function(e)
+                {
+                    if(this.value == "") {
+                        site_dtable.search("").draw();
+                    }
+                    return true;
+                });
+
+
+
+
+                $('#site_show_modal').modal({backdrop:'static', keyboard:false, show:true});
+            })
+
+
+
+
             $('#selcurrency').on('change', function(evt)
             {
                 $('#adsenserev').text(`AdSense Revenue(${$('#selcurrency').val()})`);
                 $('#adsensecpm').text(`AdSense eCPM(${$('#selcurrency').val()})`);
+                $('#site_adsenserev').text(`AdSense Revenue(${$('#selcurrency').val()})`);
+                $('#site_adsensecpm').text(`AdSense eCPM(${$('#selcurrency').val()})`);
                 cb(start, end);
             });
 
@@ -409,7 +619,7 @@
                         toastr.error("Data loading error!", "Error");
                         $.unblockUI();
                     }
-                });   
+                });
             });
 
             cb(start, end);
@@ -427,8 +637,8 @@
                     reset($ana_users);
                     ?>
                 ],
-                datasets: [{ 
-                    data: [ 
+                datasets: [{
+                    data: [
                         <?php
                             foreach ($ana_users as $row){
                                 echo $row[2].",";
@@ -460,8 +670,8 @@
                     reset($ana_users);
                     ?>
                 ],
-                datasets: [{ 
-                    data: [ 
+                datasets: [{
+                    data: [
                         <?php
                             foreach ($ana_users as $row){
                                 echo $row[3].",";
@@ -493,8 +703,8 @@
                     reset($ana_users);
                     ?>
                 ],
-                datasets: [{ 
-                    data: [ 
+                datasets: [{
+                    data: [
                         <?php
                             foreach ($ana_users as $row){
                                 echo round($row[4],2).",";
@@ -526,8 +736,8 @@
                     reset($ana_users);
                     ?>
                 ],
-                datasets: [{ 
-                    data: [ 
+                datasets: [{
+                    data: [
                         <?php
                             foreach ($ana_users as $row){
                                 echo round($row[5]).",";
@@ -591,7 +801,7 @@
                     }
                     // Initiate new chart or Redraw
 
-                };
+                }
                 // run function - render chart at first load
                 generateChart();
             },
@@ -617,18 +827,21 @@
                             hoverBackgroundColor: "#67a8e4",
                             hoverBorderColor: "#67a8e4",
                             data: [
-                            <?php
+                            @php
                                 foreach($return_users as $key=>$row){
-                                    $val = round(($row[1] - $row[2]) / $row[1] * 100,2);
+                                    if(!isset($row[1]) || empty($row[1])) $row[1] = 0;
+                                    if(!isset($row[2]) || empty($row[2])) $row[2] = 0;
+                                    $divVal = $row[1] == 0 ? 1 : $row[1];
+                                    $val = round(($row[1] - $row[2]) / $divVal * 100, 2);
                                     echo $val.",";
                                 }
-                            ?>
+                            @endphp
                             ]
                         }
                     ]
                 };
                 this.respChart($("#bar"),'Bar',barChart);
-                
+
             },
             $.ChartJs = new ChartJs, $.ChartJs.Constructor = ChartJs
 
@@ -696,7 +909,7 @@
                         if(typeof sessionCnt === 'undefined') sessionCnt = 0;
                         el.html(el.html()+ `&nbsp;<img src=\"${baseUrl}/assets/admin/images/flag/` + code.toString().toLowerCase() + ".png\" style='width: 20px; height: 14px;'/> " + " (Sessions: " + sessionCnt + ")");
                     },
-                        
+
                     backgroundColor : 'transparent',
                 });
 
@@ -705,7 +918,7 @@
             $.VectorMap = new VectorMap, $.VectorMap.Constructor = VectorMap
         }(window.jQuery),
 
-        //initializing 
+        //initializing
         function($) {
             "use strict";
             $.VectorMap.init()
@@ -737,10 +950,10 @@
                     {label: "Desktop", value: <?php echo $topdevices[0][1]; ?> }
                 ];
                 this.createDonutChart('morris-donut-example', $donutData, ['#f0f1f4', '#67a8e4', '#337ab7']);
-
             },
             //init
-            $.Dashboard = new Dashboard, $.Dashboard.Constructor = Dashboard
+            $.Dashboard = new Dashboard
+            $.Dashboard.Constructor = Dashboard
         }(window.jQuery),
 
         //initializing
@@ -778,7 +991,7 @@
                         $i++;
                         if($i>5) break;
                     }
-                ?> 
+                ?>
                 ]
                 }
             ]
@@ -791,7 +1004,7 @@
             }
         });
 
-        
+
         //table.order([ 0, 'desc' ]).draw();
     </script>
 @endpush

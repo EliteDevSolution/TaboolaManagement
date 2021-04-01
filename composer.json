@@ -8,12 +8,14 @@
         "php": ">=7.0.0",
         "drewm/mailchimp-api": "^2.5",
         "fideloper/proxy": "~3.3",
+        "google/apiclient-services": "^0.163.0",
         "jdavidbakr/mail-tracker": "~2.2.1",
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
+        "laravelcollective/html": "~5.0",
         "mercier-corentin/nextcloud": "^1.0",
         "propaganistas/laravel-phone": "^4.2",
-        "pusher/pusher-php-server": "~3.0",
+        "pusher/pusher-php-server": "^4.1",
         "spatie/laravel-analytics": "3.4.0",
         "spatie/laravel-newsletter": "4.2.3"
     },
@@ -34,7 +36,7 @@
         },
         "files": [
             "app/helpers.php"
-        ]        
+        ]
     },
     "autoload-dev": {
         "psr-4": {

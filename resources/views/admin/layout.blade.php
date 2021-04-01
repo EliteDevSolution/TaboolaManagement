@@ -10,13 +10,8 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <!--
-        <link rel="shortcut icon" href="https://cloud.chopardparfumstraining.com/index.php/apps/theming/favicon?v=27">
-        -->
-
-        <!--Morris Chart CSS -->
         @stack('css')
-        <link rel="shortcut icon" href="{{ asset('assets/img/login-min.png') }}">
+        <link rel="shortcut icon" href="{{ asset('assets/img/favicon.png') }}">
         <link href="{{ asset('assets/admin/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
         <link href="{{ asset('assets/admin/css/icons.css') }}" rel="stylesheet" type="text/css">
         <link href="{{ asset('assets/admin/css/style.css') }}" rel="stylesheet" type="text/css">
@@ -86,6 +81,17 @@
         <script>
             //Blockui plugin...this causes the blockui to run
             //whenever the content is within an <asp:UpdatePanel>
+            //Balance
+
+            $('#span_balance').popover();
+
+            // $(document).on('click', function (e) {
+            //     if ($('div.popover:visible').hasClass('show'))
+            //     {
+            //         if($(e.target).attr('class') != 'popover-title' && $(e.target).attr('class') != 'popover-content' && $(e.target).attr('id') != 'span_balance')
+            //             $('#span_balance').not(this).popover('hide');
+            //     }
+            // })
 
             //Center the element
             $.fn.center = function () {
@@ -93,6 +99,26 @@
                 this.css("top", ($(window).height() - this.height()) / 2 + $(window).scrollTop() + "px");
                 this.css("left", ($(window).width() - this.width()) / 2 + $(window).scrollLeft() + "px");
                 return this;
+            }
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            function isUrlValid(userInput) {
+                var res = userInput.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+                if(res == null)
+                    return false;
+                else
+                    return true;
+            }
+
+            //Brazil Money type change
+            function changeRealMoneyUnit(str)
+            {
+                return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(str);
             }
 
             //blockUI

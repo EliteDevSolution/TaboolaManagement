@@ -1,11 +1,7 @@
-# TaboolaManagement
- This project is Taboola & Google Analysitc API Integration.
+# laravel-adsense-analysis
+ Google adsense integration taboola.
  
-## Publish Url
- https://system.smartpublishers.co/
-
-
-## Get Started
+ ## Get Started
 env setting
 
 Composer install
@@ -32,4 +28,3 @@ Run serve
 ```sh
 $ php artisan serve
 ```
-

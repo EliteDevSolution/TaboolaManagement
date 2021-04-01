@@ -15,7 +15,7 @@ class CreateAdminRequest extends FormRequest
     {
         return [
             'name' => 'required|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email|unique:admins,email',
             'view_id' => 'required|min:3',
             'password' => 'required|min:3',
             'avatar' => 'image|mimes:jpeg,png,jpg,gif|max:10000|dimensions:max_width=2000,max_height=2000'

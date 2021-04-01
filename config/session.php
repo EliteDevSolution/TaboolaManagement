@@ -60,7 +60,7 @@ return [
 
 
 
-    'lifetime' => env('SESSION_LIFETIME', 1000),
+    'lifetime' => env('SESSION_LIFETIME',  1 * (60 * 24 * 365)),
 
 
 

@@ -7,8 +7,9 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
     	$this->disableForeignKeys();
-      $this->call(AdminsTableSeeder::class);
-      $this->enableForeignKeys();
+        $this->call(AdminsTableSeeder::class);
+        $this->call(AdminCurrencySeeder::class);
+        $this->enableForeignKeys();
 
     }
 
@@ -17,7 +18,6 @@ class DatabaseSeeder extends Seeder
       if (DB::connection()->getDriverName() == 'mysql') {
         DB::statement('SET FOREIGN_KEY_CHECKS = 0');
       }
-
     }
 
     private function enableForeignKeys()
@@ -26,5 +26,4 @@ class DatabaseSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS = 1');
       }
     }
-
 }

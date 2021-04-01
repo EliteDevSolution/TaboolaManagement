@@ -176,7 +176,7 @@ class GoogleAnalytics{
             
             $analytics = Analytics::getAnalyticsService();
             $options = [];
-    
+            $options['max-results'] = 10000;
             $options['dimensions'] = $dimensions;
 
             $data = $analytics->data_ga->get($view, $start_date, $end_date, $metrics,
